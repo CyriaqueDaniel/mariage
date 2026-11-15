@@ -54,6 +54,13 @@ Vous pouvez relancer ce menu à chaque nouvel invité : les codes existants ne c
 2. Vérifiez la ligne dans **Réponses** et les totaux dans **Synthèse**.
 3. Supprimez la ligne « Famille Exemple » dans **Foyers** et ses lignes dans **Réponses**.
 
+## 8. Vérifier le « serveur » du futur site
+
+Le futur site (sur GitHub Pages) demandera les infos à Apps Script. Pour vérifier que ça marche, ouvrez dans votre navigateur l'adresse de l'appli (celle qui finit par `/exec`) en ajoutant à la fin :
+
+- `?action=invitation&code=VOTRECODE` (avec le code de « Famille Exemple ») : vous devez voir un texte qui commence par `{"params":` et contient le nom du foyer.
+- `?action=invitation&code=XXXXXX` : vous devez voir seulement `{"erreur":"code"}`. Aucune info n'est donnée sans un bon code.
+
 ## Bon à savoir
 
 - **Après chaque modification du code**, il faut republier, sinon les invités voient l'ancienne version :

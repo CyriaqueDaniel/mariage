@@ -6,6 +6,7 @@ Formulaire de réponse pour les invités. L'utilisateur débute en code : expliq
 - Google Apps Script lié à un Google Sheet. Pas de build, pas de npm : les fichiers sont copiés-collés dans l'éditeur Apps Script.
 - `apps-script/Code.gs` : serveur (doGet, getInvitation, enregistrerReponse, menu Mariage, création des onglets).
 - `apps-script/Index.html` : toute la page (HTML, CSS, JS dans un seul fichier). Elle a un mode démo hors Google (code `DEMO01`) pour tester en local.
+- `PLAN-SITE.md` : plan validé du site invités (GitHub Pages, FR/ES). Apps Script y sert d'API : `doGet?action=invitation&code=` et `doPost` (corps texte JSON `{action:'enregistrer'}`). Sans code valide, l'API ne renvoie que `{erreur:'code'}` : aucune vraie info (lieu, adresses) ne doit être écrite dans le dépôt, qui sera public.
 - `GUIDE.md` : procédure de mise en ligne pour l'utilisateur. La tenir à jour.
 
 ## Règles

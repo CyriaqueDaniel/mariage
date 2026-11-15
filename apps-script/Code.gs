@@ -197,7 +197,10 @@ function codeAleatoire_() {
 /* Application web                                                     */
 /* ------------------------------------------------------------------ */
 
-function doGet() {
+function doGet(e) {
+  const q = (e && e.parameter) || {};
+  if (q.action === 'invitation') return repondreJson_(function () { return apiInvitation_(q.code); });
+
   const params = lireParams_();
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('Mariage de ' + params.maries)
@@ -264,6 +267,49 @@ function enregistrerReponse(code, data) {
     verrou.releaseLock();
   }
   return { ok: true };
+}
+
+/* ------------------------------------------------------------------ */
+/* API pour le site GitHub Pages                                       */
+/* Le site public ne contient aucune info : il les demande ici, et on  */
+/* ne répond qu'à un code de foyer valide.                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Le site envoie un POST en texte brut (pas en JSON) : c'est ce qui évite
+ * le blocage « CORS » du navigateur avec Apps Script.
+ * Corps attendu : {"action":"enregistrer","code":"AB12CD","data":{...}}
+ */
+function doPost(e) {
+  return repondreJson_(function () {
+    let corps;
+    try {
+      corps = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    } catch (err) {
+      return { erreur: 'requete' };
+    }
+    if (corps.action !== 'enregistrer') return { erreur: 'requete' };
+    if (!trouverFoyer_(normaliserCode_(corps.code))) return { erreur: 'code' };
+    return enregistrerReponse(corps.code, corps.data);
+  });
+}
+
+/** Comme getInvitation, mais sans rien dévoiler tant que le code n'est pas bon. */
+function apiInvitation_(code) {
+  if (!normaliserCode_(code)) return { erreur: 'code' };
+  const r = getInvitation(code);
+  return r.foyer ? r : { erreur: 'code' };
+}
+
+function repondreJson_(fn) {
+  let resultat;
+  try {
+    resultat = fn();
+  } catch (err) {
+    resultat = { erreur: 'serveur', message: String(err && err.message || err) };
+  }
+  return ContentService.createTextOutput(JSON.stringify(resultat))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 /* ------------------------------------------------------------------ */
