@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notre mariage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Karla:wght@400;500;700&display=swap">
+<style>
+/* Mise en page : une colonne étroite façon faire-part, une carte par invité, puis les questions du foyer. */
+:root {
+  --bg: #f3f5f1;
+  --surface: #ffffff;
+  --ink: #1f2a24;
+  --muted: #5b6960;
+  --line: #d6ddd4;
+  --accent: #2f5d4a;
+  --accent-ink: #ffffff;
+  --accent-soft: #e4ede7;
+  --gold: #9a7a35;
+  --danger: #a63d32;
+  --display: 'Marcellus', 'Cormorant', Georgia, serif;
+  --body: 'Karla', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121815;
+    --surface: #1a221e;
+    --ink: #e6ebe7;
+    --muted: #a1aea6;
+    --line: #2e3a34;
+    --accent: #86bfa2;
+    --accent-ink: #0e1a14;
+    --accent-soft: #223129;
+    --gold: #d4b26a;
+    --danger: #ec8d82;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.55 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+.page { max-width: 620px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+/* En-tête faire-part */
+.entete { text-align: center; padding-block: 40px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.surtitre { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+.entete h1 { font: 400 clamp(34px, 8vw, 52px)/1.1 var(--display); margin: 4px 0; text-wrap: balance; }
+.entete .date { font-family: var(--display); font-size: 20px; }
+.entete .lieu { color: var(--muted); }
+.filet { width: 64px; height: 1px; background: var(--gold); margin: 10px 0 4px; }
+.compte { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.compte strong { color: var(--ink); }
+
+.bandeau-demo { background: var(--accent-soft); color: var(--ink); border: 1px dashed var(--accent); border-radius: 10px; padding: 10px 14px; font-size: 14px; margin-top: 16px; }
+
+.carte { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.carte.en-erreur { border-color: var(--danger); }
+h2 { font: 400 24px/1.2 var(--display); margin: 0; }
+.aide { margin: -6px 0 0; color: var(--muted); font-size: 15px; }
+.intro { text-align: center; color: var(--muted); margin: 0; text-wrap: balance; }
+
+.personne-tete { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.personne-nom { font: 400 22px/1.2 var(--display); margin: 0; }
+.badge { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); border: 1px solid currentColor; border-radius: 99px; padding: 2px 9px; font-weight: 700; }
+.details { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--line); padding-top: 14px; }
+.question { font-weight: 700; margin: 0; display: block; }
+
+/* Choix Oui / Non en pastilles */
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg label, .choix label { position: relative; cursor: pointer; }
+.seg input, .choix input, .puce input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: inline-block; padding: 9px 16px; border: 1px solid var(--line); border-radius: 99px; background: var(--bg); transition: background .15s, border-color .15s; }
+.seg input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.seg input:focus-visible + span, .choix input:focus-visible + span, .puce input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Listes de choix (lieux, lendemain) */
+.choix { display: flex; flex-direction: column; gap: 8px; }
+.choix span { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.choix span::before { content: ''; width: 18px; height: 18px; flex: none; border: 2px solid var(--muted); border-radius: 50%; }
+.choix input[type=checkbox] + span::before { border-radius: 5px; }
+.choix input:checked + span { border-color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+.choix input:checked + span::before { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+
+/* Allergènes en puces */
+.allergenes { display: flex; flex-direction: column; gap: 10px; background: var(--bg); border-radius: 10px; padding: 14px; }
+.puces { display: flex; flex-wrap: wrap; gap: 6px; }
+.puce { position: relative; cursor: pointer; }
+.puce span { display: inline-block; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.puce input:checked + span { background: var(--danger); border-color: var(--danger); color: var(--surface); font-weight: 700; }
+
+.champ { width: 100%; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.champ:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+textarea.champ { min-height: 84px; resize: vertical; }
+.ligne { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 700; }
+.ligne .champ { width: 90px; }
+
+.msg-erreur { color: var(--danger); font-weight: 700; margin: 0; font-size: 15px; }
+
+button { font: inherit; cursor: pointer; }
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 99px; padding: 14px 26px; font-weight: 700; font-size: 17px; }
+.btn:disabled { opacity: .6; cursor: wait; }
+.btn:focus-visible, .lien:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.btn-second { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+.lien { background: none; border: 0; color: var(--accent); text-decoration: underline; padding: 4px 0; font-weight: 500; }
+.retirer { margin-left: auto; color: var(--danger); }
+.actions { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+/* Récapitulatif */
+.recap { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.recap li { display: flex; flex-direction: column; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.recap li:last-child { border-bottom: 0; padding-bottom: 0; }
+.recap .qui { font-weight: 700; }
+.recap .quoi { color: var(--muted); font-size: 15px; }
+.merci { text-align: center; }
+.merci h2 { font-size: 30px; }
+
+.chargement { text-align: center; color: var(--muted); padding: 40px 0; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="entete" id="entete">
+    <span class="surtitre">Nous nous marions</span>
+    <h1 id="maries">&nbsp;</h1>
+    <div class="date" id="date"></div>
+    <div class="lieu" id="lieu"></div>
+    <div class="filet"></div>
+    <div class="compte" id="compte"></div>
+  </header>
+  <div id="demo" hidden class="bandeau-demo">Aperçu local : les réponses ne sont pas enregistrées. Code d'essai : <strong>DEMO01</strong>.</div>
+  <main id="vue"><p class="chargement">Chargement de votre invitation…</p></main>
+</div>
+
+<script>
+/* ---------- Accès au serveur (ou mode démo hors Google) ---------- */
+const DEMO = typeof google === 'undefined' || !google.script;
+
+const DEMO_PARAMS = {
+  maries: 'Prénom & Prénom', date: 'Samedi 21 août 2027', iso: '2027-08-21', lieu: 'Lieu à compléter',
+  limite: '1er juin 2027', lendemain: 'Dimanche 22 août 2027, le midi',
+  couchages: ['Sur place', 'Gîte (à renommer)', 'Hôtel (à renommer)', 'Je rentre chez moi', 'Autre'],
+  allergenes: ['Gluten', 'Crustacés', 'Œufs', 'Poissons', 'Arachides', 'Soja', 'Lait', 'Fruits à coque', 'Céleri', 'Moutarde', 'Sésame', 'Sulfites', 'Lupin', 'Mollusques'],
+  regimes: ['Aucun', 'Végétarien', 'Végan', 'Sans porc', 'Halal', 'Casher', 'Sans gluten (non allergique)', 'Femme enceinte', 'Autre (préciser en message)'],
+  transports: ['Voiture', 'Train', 'Avion', 'Autre'],
+  covoiturages: ['Non merci', 'Je propose des places', 'Je cherche une place'],
+};
+const demoReponses = {};
+const DEMO_API = {
+  getInvitation(code) {
+    code = String(code || '').trim().toUpperCase();
+    if (!code) return { params: DEMO_PARAMS };
+    if (code !== 'DEMO01') return { params: DEMO_PARAMS, erreur: 'code' };
+    return { params: DEMO_PARAMS, foyer: { code, nom: 'Famille Exemple', adultes: ['Marie Exemple', 'Paul Exemple'], enfants: ['Léa Exemple'] }, reponse: demoReponses[code] || null };
+  },
+  enregistrerReponse(code, data) { demoReponses[code] = JSON.parse(JSON.stringify(data)); return { ok: true }; },
+};
+
+function api(fn, ...args) {
+  return new Promise((ok, ko) => {
+    if (DEMO) return setTimeout(() => { try { ok(DEMO_API[fn](...args)); } catch (e) { ko(e); } }, 250);
+    google.script.run.withSuccessHandler(ok).withFailureHandler(ko)[fn](...args);
+  });
+}
+
+function lireCodeUrl() {
+  return new Promise(res => {
+    if (DEMO) return res(new URLSearchParams(location.search).get('code') || '');
+    google.script.url.getLocation(l => res((l.parameter && l.parameter.code) || ''));
+  });
+}
+
+/* ---------- Utilitaires ---------- */
+const $ = s => document.querySelector(s);
+const vue = $('#vue');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const seg = (name, opts, val) => `<div class="seg" role="radiogroup">${opts.map(([v, l]) =>
+  `<label><input type="radio" name="${name}" value="${esc(v)}" ${val === v ? 'checked' : ''}><span>${esc(l)}</span></label>`).join('')}</div>`;
+
+const etat = { params: null, foyer: null, reponse: null };
+let uid = 0;
+const lendemainCoches = new Set();
+
+/* ---------- Démarrage ---------- */
+if (DEMO) $('#demo').hidden = false;
+lireCodeUrl().then(charger);
+
+async function charger(code) {
+  vue.innerHTML = '<p class="chargement">Chargement de votre invitation…</p>';
+  try {
+    const r = await api('getInvitation', code);
+    etat.params = r.params;
+    afficherEntete();
+    if (r.foyer) {
+      etat.foyer = r.foyer;
+      etat.reponse = r.reponse;
+      r.reponse ? afficherMerci(r.reponse, false) : afficherFormulaire();
+    } else {
+      afficherCode(r.erreur === 'code');
+    }
+  } catch (e) {
+    vue.innerHTML = `<div class="carte"><p class="msg-erreur">Impossible de charger l'invitation. Vérifiez votre connexion puis rechargez la page.</p></div>`;
+  }
+}
+
+function afficherEntete() {
+  const p = etat.params;
+  $('#maries').textContent = p.maries;
+  $('#date').textContent = p.date;
+  $('#lieu').textContent = p.lieu;
+  document.title = 'Mariage de ' + p.maries;
+  const jour = new Date(p.iso + 'T12:00:00');
+  const reste = Math.ceil((jour - new Date()) / 86400000);
+  let txt = '';
+  if (!isNaN(reste) && reste > 0) txt = `Plus que <strong>${reste}</strong> jour${reste > 1 ? 's' : ''}`;
+  if (p.limite) txt += (txt ? ' · ' : '') + `Merci de répondre avant le <strong>${esc(p.limite)}</strong>`;
+  $('#compte').innerHTML = txt;
+}
+
+/* ---------- Écran : saisie du code ---------- */
+function afficherCode(erreur) {
+  vue.innerHTML = `
+    <form class="carte" id="form-code" novalidate>
+      <h2>Votre code d'invitation</h2>
+      <p class="aide">Il figure sur votre faire-part ou dans le message que vous avez reçu.</p>
+      <label class="question" for="code">Code</label>
+      <input class="champ" id="code" name="code" autocomplete="off" autocapitalize="characters" maxlength="12" placeholder="Ex. : K7MPQ2">
+      <p class="msg-erreur" ${erreur ? '' : 'hidden'}>Ce code ne correspond à aucune invitation. Vérifiez-le ou contactez-nous.</p>
+      <div class="actions"><button class="btn" type="submit">Voir mon invitation</button></div>
+    </form>`;
+  $('#form-code').addEventListener('submit', e => {
+    e.preventDefault();
+    const c = $('#code').value.trim();
+    if (c) charger(c);
+  });
+}
+
+/* ---------- Écran : formulaire ---------- */
+function afficherFormulaire() {
+  const f = etat.foyer, rep = etat.reponse, p = etat.params;
+  let personnes;
+  if (rep) {
+    personnes = rep.personnes.map(x => ({ ...x, ajoute: x.type === 'Enfant' && !f.enfants.includes(x.nom) }));
+    f.adultes.concat(f.enfants).forEach((nom, i) => {
+      const type = i < f.adultes.length ? 'Adulte' : 'Enfant';
+      if (!personnes.some(x => x.nom === nom && x.type === type)) personnes.push({ nom, type });
+    });
+  } else {
+    personnes = [...f.adultes.map(nom => ({ nom, type: 'Adulte' })), ...f.enfants.map(nom => ({ nom, type: 'Enfant' }))];
+  }
+  lendemainCoches.clear();
+
+  vue.innerHTML = `
+    <form id="form" class="page" novalidate>
+      <p class="intro">Bonjour ${esc(f.nom)} ! Dites-nous qui sera là, et on s'occupe du reste.</p>
+      <div id="personnes" class="page"></div>
+      <div class="actions"><button type="button" class="btn btn-second" id="ajout-enfant">+ Ajouter un enfant</button></div>
+
+      <section class="carte bloc-present" id="bloc-couchage">
+        <h2>Où dormez-vous ?</h2>
+        <p class="aide">La nuit qui suit le mariage.</p>
+        <div class="choix">${p.couchages.map(l => `<label><input type="radio" name="lieu" value="${esc(l)}" ${rep && rep.lieu === l ? 'checked' : ''}><span>${esc(l)}</span></label>`).join('')}</div>
+        <p class="msg-erreur" hidden></p>
+      </section>
+
+      <section class="carte bloc-present" id="bloc-lendemain">
+        <h2>Le lendemain</h2>
+        <p class="aide">${esc(p.lendemain)} : on prolonge la fête autour d'un repas. Qui reste ?</p>
+        <div class="choix" id="liste-lendemain"></div>
+        <div id="apport" class="page" style="gap:12px" hidden>
+          <p class="question">Apportez-vous quelque chose à manger ?</p>
+          ${seg('apporte', [['Oui', 'Oui'], ['Non', 'Non']], rep && rep.apporte)}
+          <textarea class="champ" id="apporteQuoi" name="apporteQuoi" maxlength="300" placeholder="Ex. : une quiche, un taboulé pour 8, des fruits…" hidden>${esc(rep ? rep.apporteQuoi : '')}</textarea>
+        </div>
+        <p class="msg-erreur" hidden></p>
+      </section>
+
+      <section class="carte bloc-present" id="bloc-transport">
+        <h2>Venir au mariage</h2>
+        <label class="question" for="transport">Comment venez-vous ?</label>
+        <select class="champ" id="transport" name="transport">
+          <option value="">Choisir…</option>
+          ${p.transports.map(t => `<option ${rep && rep.transport === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+        </select>
+        <p class="question">Covoiturage</p>
+        ${seg('covoit', p.covoiturages.map(c => [c, c]), rep && rep.covoit)}
+        <label class="ligne" id="ligne-places" hidden>Places libres <input class="champ" type="number" inputmode="numeric" min="1" max="9" id="places" name="places" value="${esc(rep ? rep.places : '')}"></label>
+      </section>
+
+      <section class="carte">
+        <h2>Un mot pour nous ?</h2>
+        <textarea class="champ" id="message" name="message" maxlength="1000" placeholder="Une question, une précision, un petit mot…">${esc(rep ? rep.message : '')}</textarea>
+      </section>
+
+      <p class="msg-erreur" id="erreur-envoi" hidden></p>
+      <div class="actions"><button class="btn" type="submit" id="envoyer">${rep ? 'Mettre à jour ma réponse' : 'Envoyer ma réponse'}</button></div>
+    </form>`;
+
+  const conteneur = $('#personnes');
+  personnes.forEach(x => conteneur.appendChild(carte(x)));
+
+  const form = $('#form');
+  form.addEventListener('change', e => {
+    if (e.target.closest('#liste-lendemain')) {
+      e.target.checked ? lendemainCoches.add(e.target.value) : lendemainCoches.delete(e.target.value);
+    }
+    majVisibilite();
+  });
+  form.addEventListener('input', e => { if (e.target.classList.contains('nom-enfant')) majLendemain(); });
+  form.addEventListener('click', e => {
+    if (e.target.classList.contains('retirer')) {
+      const c = e.target.closest('.personne');
+      lendemainCoches.delete(c.dataset.uid);
+      c.remove();
+      majVisibilite();
+    }
+  });
+  $('#ajout-enfant').addEventListener('click', () => {
+    const c = carte({ nom: '', type: 'Enfant', ajoute: true, present: 'Oui' });
+    conteneur.appendChild(c);
+    majVisibilite();
+    c.querySelector('.nom-enfant').focus();
+  });
+  form.addEventListener('submit', envoyer);
+  majVisibilite();
+}
+
+function carte(x) {
+  const u = 'p' + (++uid);
+  const p = etat.params;
+  const enfant = x.type === 'Enfant';
+  if (x.resteLendemain === 'Oui') lendemainCoches.add(u);
+  const el = document.createElement('section');
+  el.className = 'carte personne';
+  el.dataset.uid = u;
+  el.dataset.type = x.type;
+  el.dataset.nom = x.nom || '';
+  if (x.ajoute) el.dataset.ajoute = '1';
+  el.innerHTML = `
+    <div class="personne-tete">
+      ${x.ajoute
+        ? `<input class="champ nom-enfant" name="${u}-nom" aria-label="Prénom de l'enfant" placeholder="Prénom de l'enfant" maxlength="60" value="${esc(x.nom)}" style="flex:1;min-width:0">`
+        : `<h3 class="personne-nom">${esc(x.nom)}</h3>`}
+      <span class="badge">${enfant ? 'Enfant' : 'Adulte'}</span>
+      ${x.ajoute ? `<button type="button" class="lien retirer">Retirer</button>` : ''}
+    </div>
+    ${seg(u + '-present', [['Oui', 'Sera là'], ['Non', 'Ne pourra pas venir']], x.present)}
+    <div class="details" hidden>
+      ${enfant ? `<label class="ligne">Âge <input class="champ" type="number" inputmode="numeric" min="0" max="17" name="${u}-age" value="${esc(x.age)}"> ans</label>` : ''}
+      <p class="question">Des allergies alimentaires ?</p>
+      ${seg(u + '-allergie', [['Non', 'Non'], ['Oui', 'Oui']], x.allergie)}
+      <div class="allergenes" hidden>
+        <p class="question">Lesquelles ?</p>
+        <div class="puces">${p.allergenes.map(a => `<label class="puce"><input type="checkbox" name="${u}-alg" value="${esc(a)}" ${(x.allergenes || []).includes(a) ? 'checked' : ''}><span>${esc(a)}</span></label>`).join('')}</div>
+        <input class="champ" name="${u}-autre" maxlength="200" aria-label="Autre allergie ou précision" placeholder="Autre allergie ou précision (gravité, traces…)" value="${esc(x.autreAllergie)}">
+      </div>
+      <label class="question" for="${u}-regime">Régime alimentaire</label>
+      <select class="champ" id="${u}-regime" name="${u}-regime">${p.regimes.map(r => `<option ${x.regime === r ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select>
+    </div>
+    <p class="msg-erreur" hidden></p>`;
+  return el;
+}
+
+const choisi = n => (document.querySelector(`[name="${n}"]:checked`) || {}).value || '';
+const nomDe = c => c.dataset.ajoute ? c.querySelector('.nom-enfant').value.trim() : c.dataset.nom;
+
+function majVisibilite() {
+  const cartes = [...document.querySelectorAll('.personne')];
+  let presents = 0;
+  cartes.forEach(c => {
+    const u = c.dataset.uid;
+    const la = choisi(u + '-present') === 'Oui';
+    if (la) presents++;
+    c.querySelector('.details').hidden = !la;
+    c.querySelector('.allergenes').hidden = choisi(u + '-allergie') !== 'Oui';
+  });
+  document.querySelectorAll('.bloc-present').forEach(b => b.hidden = presents === 0);
+  majLendemain();
+  $('#apport').hidden = lendemainCoches.size === 0;
+  $('#apporteQuoi').hidden = choisi('apporte') !== 'Oui';
+  $('#ligne-places').hidden = choisi('covoit') !== 'Je propose des places';
+}
+
+function majLendemain() {
+  const presents = [...document.querySelectorAll('.personne')].filter(c => choisi(c.dataset.uid + '-present') === 'Oui');
+  const ids = new Set(presents.map(c => c.dataset.uid));
+  [...lendemainCoches].forEach(id => { if (!ids.has(id)) lendemainCoches.delete(id); });
+  $('#liste-lendemain').innerHTML = presents.map(c =>
+    `<label><input type="checkbox" value="${c.dataset.uid}" ${lendemainCoches.has(c.dataset.uid) ? 'checked' : ''}><span>${esc(nomDe(c) || 'Enfant sans prénom')}</span></label>`
+  ).join('') || '';
+}
+
+/* ---------- Envoi ---------- */
+function collecter() {
+  document.querySelectorAll('.en-erreur').forEach(el => el.classList.remove('en-erreur'));
+  document.querySelectorAll('.msg-erreur').forEach(el => { if (el.id !== 'erreur-envoi') el.hidden = true; });
+  let premiere = null;
+  const erreur = (bloc, msg) => {
+    const m = bloc.querySelector('.msg-erreur');
+    m.textContent = msg; m.hidden = false;
+    bloc.classList.add('en-erreur');
+    if (!premiere) premiere = bloc;
+  };
+
+  const personnes = [...document.querySelectorAll('.personne')].map(c => {
+    const u = c.dataset.uid;
+    const nom = nomDe(c);
+    const present = choisi(u + '-present');
+    const allergie = choisi(u + '-allergie');
+    const allergenes = [...c.querySelectorAll(`[name="${u}-alg"]:checked`)].map(i => i.value);
+    const autreAllergie = c.querySelector(`[name="${u}-autre"]`).value.trim();
+    const ageEl = c.querySelector(`[name="${u}-age"]`);
+    const age = ageEl ? ageEl.value.trim() : '';
+    const regime = c.querySelector(`[name="${u}-regime"]`).value;
+
+    if (!nom) erreur(c, "Indiquez le prénom de l'enfant, ou retirez-le.");
+    else if (!present) erreur(c, 'Indiquez si cette personne sera là.');
+    else if (present === 'Oui') {
+      if (ageEl && (age === '' || +age < 0 || +age > 17)) erreur(c, "Indiquez l'âge de l'enfant (0 à 17 ans).");
+      else if (!allergie) erreur(c, 'Indiquez si cette personne a des allergies.');
+      else if (allergie === 'Oui' && !allergenes.length && !autreAllergie) erreur(c, 'Cochez au moins un allergène ou précisez-le.');
+    }
+    return { nom, type: c.dataset.type, age, present, allergie, allergenes, autreAllergie, regime,
+      resteLendemain: lendemainCoches.has(u) ? 'Oui' : 'Non' };
+  });
+
+  const presents = personnes.some(x => x.present === 'Oui');
+  const data = {
+    personnes,
+    lieu: presents ? choisi('lieu') : '',
+    apporte: presents && lendemainCoches.size ? choisi('apporte') : '',
+    apporteQuoi: $('#apporteQuoi').value.trim(),
+    transport: presents ? $('#transport').value : '',
+    covoit: presents ? choisi('covoit') : '',
+    places: $('#places').value.trim(),
+    message: $('#message').value.trim(),
+  };
+  if (presents && !data.lieu) erreur($('#bloc-couchage'), 'Choisissez où vous dormez.');
+  if (lendemainCoches.size && !data.apporte) erreur($('#bloc-lendemain'), 'Dites-nous si vous apportez quelque chose.');
+  else if (data.apporte === 'Oui' && !data.apporteQuoi) erreur($('#bloc-lendemain'), 'Précisez ce que vous apportez.');
+
+  if (premiere) {
+    premiere.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return null;
+  }
+  return data;
+}
+
+async function envoyer(e) {
+  e.preventDefault();
+  const data = collecter();
+  if (!data) return;
+  const bouton = $('#envoyer'), msg = $('#erreur-envoi');
+  bouton.disabled = true; bouton.textContent = 'Envoi en cours…'; msg.hidden = true;
+  try {
+    await api('enregistrerReponse', etat.foyer.code, data);
+    etat.reponse = data;
+    afficherMerci(data, true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (err) {
+    msg.textContent = "La réponse n'a pas pu être envoyée. Vérifiez votre connexion et réessayez.";
+    msg.hidden = false;
+    bouton.disabled = false; bouton.textContent = 'Réessayer';
+  }
+}
+
+/* ---------- Écran : merci / récapitulatif ---------- */
+function afficherMerci(r, nouveau) {
+  const presents = r.personnes.filter(x => x.present === 'Oui');
+  const ligne = x => {
+    if (x.present !== 'Oui') return `<li><span class="qui">${esc(x.nom)}</span><span class="quoi">Ne pourra pas venir</span></li>`;
+    const infos = [];
+    if (x.type === 'Enfant' && x.age !== '') infos.push(`${esc(x.age)} ans`);
+    if (x.allergie === 'Oui') infos.push('Allergies : ' + esc([...x.allergenes, x.autreAllergie].filter(Boolean).join(', ')));
+    if (x.regime && x.regime !== 'Aucun') infos.push(esc(x.regime));
+    if (x.resteLendemain === 'Oui') infos.push('reste le lendemain');
+    return `<li><span class="qui">${esc(x.nom)} sera là</span><span class="quoi">${infos.join(' · ') || 'Pas de contrainte alimentaire'}</span></li>`;
+  };
+  vue.innerHTML = `
+    <div class="page">
+      <section class="carte merci">
+        <h2>${nouveau ? 'Merci, c\'est noté !' : 'Vous avez déjà répondu'}</h2>
+        <p class="aide" style="margin:0">${presents.length ? 'Nous avons hâte de vous voir.' : 'Vous allez nous manquer. Merci de nous avoir prévenus.'}</p>
+      </section>
+      <section class="carte">
+        <h2>Votre réponse</h2>
+        <ul class="recap">
+          ${r.personnes.map(ligne).join('')}
+          ${presents.length && r.lieu ? `<li><span class="qui">Couchage</span><span class="quoi">${esc(r.lieu)}</span></li>` : ''}
+          ${r.apporte === 'Oui' ? `<li><span class="qui">Pour le lendemain, vous apportez</span><span class="quoi">${esc(r.apporteQuoi)}</span></li>` : ''}
+          ${r.transport ? `<li><span class="qui">Transport</span><span class="quoi">${esc(r.transport)}${r.covoit && r.covoit !== 'Non merci' ? ' · ' + esc(r.covoit) + (r.places ? ` (${esc(r.places)})` : '') : ''}</span></li>` : ''}
+          ${r.message ? `<li><span class="qui">Votre message</span><span class="quoi">${esc(r.message)}</span></li>` : ''}
+        </ul>
+      </section>
+      <div class="actions"><button class="btn btn-second" type="button" id="modifier">Modifier ma réponse</button></div>
+    </div>`;
+  $('#modifier').addEventListener('click', () => { afficherFormulaire(); window.scrollTo({ top: 0 }); });
+}
+</script>
+</body>
+</html>
