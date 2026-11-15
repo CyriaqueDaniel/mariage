@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Site privé : on demande aux moteurs de recherche de ne pas l'indexer. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1f7a4d">
+<title>Notre mariage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="evitement" href="#contenu" data-t="allerContenu">Aller au contenu</a>
+
+<!-- Écran 1 : chargement -->
+<div id="ecran-chargement" class="ecran-centre" role="status">
+  <p data-t="chargement">Chargement de votre invitation…</p>
+</div>
+
+<!-- Écran 2 : saisie du code -->
+<div id="ecran-connexion" class="ecran-centre" hidden>
+  <div class="fanions" aria-hidden="true"></div>
+  <form id="form-code" class="connexion" novalidate>
+    <h1 data-t="connexionTitre">Votre invitation</h1>
+    <p class="aide" data-t="connexionAide">Entrez le code à 6 caractères reçu avec votre faire-part.</p>
+    <label for="code" class="etiquette" data-t="codeEtiquette">Code d'invitation</label>
+    <input id="code" name="code" class="champ champ-code" autocomplete="off" autocapitalize="characters"
+           spellcheck="false" maxlength="12" inputmode="text" aria-describedby="erreur-code">
+    <p id="erreur-code" class="msg-erreur" hidden></p>
+    <button class="btn" type="submit" data-t="connexionBouton">Ouvrir mon invitation</button>
+  </form>
+</div>
+
+<!-- Écran 3 : le site -->
+<div id="ecran-site" hidden>
+  <header class="hero">
+    <div class="fanions" aria-hidden="true"></div>
+    <p class="hero-intro" data-t="seMarient">se marient</p>
+    <h1 id="maries" class="hero-maries"></h1>
+    <p id="date" class="hero-date"></p>
+  </header>
+
+  <nav class="onglets" aria-label="Sections du site">
+    <a href="#accueil" data-onglet="accueil"><span data-t="ongletAccueil">Accueil</span></a>
+    <a href="#programme" data-onglet="programme"><span data-t="ongletProgramme">Programme</span></a>
+    <a href="#dormir" data-onglet="dormir"><span data-t="ongletDormir">Où dormir</span></a>
+    <a href="#repondre" data-onglet="repondre" class="onglet-cle"><span data-t="ongletRepondre">Répondre</span></a>
+  </nav>
+
+  <main id="contenu" tabindex="-1">
+    <section id="accueil" data-panneau="accueil" aria-labelledby="titre-accueil">
+      <h2 id="titre-accueil" class="titre-section"></h2>
+      <p id="compte" class="compte"></p>
+      <p id="limite" class="aide"></p>
+      <a class="btn" href="#repondre" data-t="boutonRepondre">Répondre à l'invitation</a>
+    </section>
+
+    <section id="programme" data-panneau="programme" aria-labelledby="titre-programme" hidden>
+      <h2 id="titre-programme" class="titre-section" data-t="ongletProgramme">Programme</h2>
+      <p class="aide" data-t="bientot">Cette page sera remplie à la prochaine étape.</p>
+    </section>
+
+    <section id="dormir" data-panneau="dormir" aria-labelledby="titre-dormir" hidden>
+      <h2 id="titre-dormir" class="titre-section" data-t="ongletDormir">Où dormir</h2>
+      <p class="aide" data-t="bientot">Cette page sera remplie à la prochaine étape.</p>
+    </section>
+
+    <section id="repondre" data-panneau="repondre" aria-labelledby="titre-repondre" hidden>
+      <h2 id="titre-repondre" class="titre-section" data-t="ongletRepondre">Répondre</h2>
+      <p class="aide" data-t="bientot">Cette page sera remplie à la prochaine étape.</p>
+    </section>
+  </main>
+
+  <footer class="pied">
+    <p id="bandeau-demo" class="demo" hidden data-t="demo">Mode démonstration : rien n'est enregistré.</p>
+    <button type="button" class="lien" id="changer-code" data-t="changerCode">Ce n'est pas votre invitation ? Changer de code</button>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
