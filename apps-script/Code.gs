@@ -30,7 +30,7 @@ const P = {
 };
 
 const PARAMS_DEFAUT = [
-  [P.MARIES, 'Prénom & Prénom'],
+  [P.MARIES, 'Morgane & Cyriaque'],
   [P.DATE, 'Samedi 21 août 2027'],
   [P.ISO, '2027-08-21'],
   [P.LIEU, 'Lieu à compléter'],

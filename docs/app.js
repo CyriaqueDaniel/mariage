@@ -46,7 +46,7 @@ const TEXTES = {
 
 /* ---------- Données de démonstration (fictives) ---------- */
 const DEMO_PARAMS = {
-  maries: 'Prénom & Prénom', date: 'Samedi 21 août 2027', iso: '2027-08-21',
+  maries: 'Morgane & Cyriaque', date: 'Samedi 21 août 2027', iso: '2027-08-21',
   lieu: 'Lieu à compléter', limite: '1er juin 2027',
 };
 const DEMO_FOYERS = {
@@ -100,7 +100,7 @@ async function obtenirInvitation(code) {
 function demarrer() {
   const url = new URLSearchParams(location.search);
   const code = normaliser(url.get('code') || memoire.lire('code'));
-  dessinerFanions();
+  dessinerGuirlande();
   appliquerTextes();
   $('#form-code').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -192,21 +192,62 @@ function afficherOnglet() {
   }
 }
 
-/* ---------- Guirlande de fanions (dessinée une fois, en SVG) ---------- */
-function dessinerFanions() {
-  const couleurs = ['var(--vert)', 'var(--soleil)', '#ffffff', 'var(--bleu)'];
-  const n = 11, largeur = 560, creux = 34;
-  let triangles = '';
+/* ---------- Bouteilles suspendues avec guirlandes lumineuses (comme la déco du mariage) ---------- */
+
+// Trois formes de bouteilles, dessinées à partir du haut du goulot (point 0,0).
+// « corps » = zone où l'on peut placer les petites lumières.
+const FORMES_BOUTEILLES = {
+  vin: { d: 'M-4 0h8v14q0 4 7 8v34q0 4-4 4h-14q-4 0-4-4v-34q7-4 7-8z', corps: { x: -8, y: 26, l: 16, h: 30 } },
+  ronde: { d: 'M-3 0h6v12a15 15 0 1 1-6 0z', corps: { x: -9, y: 18, l: 18, h: 18 } },
+  bocal: { d: 'M-6 0h12v6q6 2 6 8v24q0 4-4 4h-16q-4 0-4-4v-24q0-6 6-8z', corps: { x: -9, y: 16, l: 18, h: 20 } },
+};
+
+function dessinerGuirlande() {
+  // Verre : rouge, orange vif, violet (les bouteilles), plus le vert et le bleu du mariage.
+  const verres = ['var(--rouge)', 'var(--orange)', 'var(--violet)', 'var(--vert)', 'var(--rouge)', 'var(--violet)', 'var(--orange)'];
+  const formes = ['vin', 'ronde', 'bocal', 'vin', 'ronde', 'vin', 'bocal'];
+  const fils = [22, 46, 14, 38, 18, 50, 28]; // longueur du fil de chaque bouteille, irrégulière comme dans un arbre
+  const lumieres = ['#fff3b0', '#ffd166', '#ff9ec4', '#a0f0ff', '#c8ffb0'];
+  const largeur = 400, creux = 22, n = formes.length;
+
+  // Petite fonction pseudo-aléatoire stable : les lumières sont toujours au même endroit.
+  let graine = 7;
+  const hasard = () => ((graine = (graine * 9301 + 49297) % 233280) / 233280);
+
+  let bouteilles = '';
   for (let i = 0; i < n; i++) {
-    const x = 20 + i * ((largeur - 40) / (n - 1));
+    const x = 30 + i * ((largeur - 60) / (n - 1));
     const u = x / largeur;
-    const y = 6 + 4 * creux * u * (1 - u); // la ficelle forme un arc
-    triangles += `<path class="fanion" style="--i:${i};fill:${couleurs[i % couleurs.length]}" d="M${x - 17} ${y} L${x + 17} ${y} L${x} ${y + 40} Z" stroke="rgba(0,0,0,.15)" stroke-width="1"/>`;
+    const y = 4 + 4 * creux * u * (1 - u); // point de la ficelle principale (elle forme un arc)
+    const f = FORMES_BOUTEILLES[formes[i]], c = f.corps, fil = fils[i];
+    let points = '';
+    for (let k = 0; k < 7; k++) {
+      const px = c.x + hasard() * c.l, py = fil + c.y + hasard() * c.h;
+      points += `<circle class="lumiere" style="--k:${(i * 7 + k) % 9}" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.6" fill="${lumieres[(i + k) % lumieres.length]}"/>`;
+    }
+    bouteilles += `
+      <g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
+        <g class="bouteille" style="--i:${i}">
+          <line x1="0" y1="0" x2="0" y2="${fil}" stroke="currentColor" stroke-opacity=".6" stroke-width="1.2"/>
+          <rect x="-3.5" y="${fil - 4}" width="7" height="5" rx="1.5" fill="#8a5a2b"/>
+          <g transform="translate(0 ${fil})">
+            <path d="${f.d}" style="fill:${verres[i]}" fill-opacity=".72" stroke="rgba(0,0,0,.25)" stroke-width="1"/>
+          </g>
+          <g filter="url(#halo)">${points}</g>
+          <path d="M${c.x + 3} ${fil + c.y + 2}v${c.h - 6}" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>
+        </g>
+      </g>`;
   }
-  const svg = `<svg viewBox="0 0 ${largeur} ${creux + 56}" role="presentation" focusable="false">
-    <path d="M0 4 Q ${largeur / 2} ${4 + 2 * creux} ${largeur} 4" fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width="2"/>
-    ${triangles}</svg>`;
-  document.querySelectorAll('.fanions').forEach((el) => { el.innerHTML = svg; });
+  // Chaque guirlande a son propre filtre « halo » : un filtre placé dans un écran caché ne s'afficherait pas ailleurs.
+  document.querySelectorAll('.guirlande').forEach((el, j) => {
+    el.innerHTML = `<svg viewBox="0 0 ${largeur} ${creux + 120}" role="presentation" focusable="false">
+    <defs><filter id="halo${j}" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.6" result="flou"/>
+      <feMerge><feMergeNode in="flou"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter></defs>
+    <path d="M0 4Q${largeur / 2} ${4 + 2 * creux} ${largeur} 4" fill="none" stroke="currentColor" stroke-opacity=".6" stroke-width="2"/>
+    ${bouteilles.replaceAll('url(#halo)', `url(#halo${j})`)}</svg>`;
+  });
 }
 
 demarrer();
