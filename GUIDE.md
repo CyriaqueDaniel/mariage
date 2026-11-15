@@ -21,7 +21,7 @@ Les invités, eux, n'ont besoin d'aucun compte : ils ouvrent leur lien et répon
 1. Dans l'éditeur, en haut, choisissez la fonction `installer` dans la liste, puis cliquez sur **Exécuter**.
 2. Google demande une autorisation. C'est normal, c'est votre propre script :
    **Examiner les autorisations** > votre compte > **Paramètres avancés** > **Accéder à … (non sécurisé)** > **Autoriser**.
-3. Revenez sur la feuille : les onglets Paramètres, Foyers, Réponses et Synthèse sont créés.
+3. Revenez sur la feuille : les onglets Paramètres, Foyers, Réponses, Synthèse, Programme et Hébergements sont créés.
    Un menu **Mariage** apparaît aussi (rechargez la page s'il n'est pas là).
 
 ## 4. Remplir vos informations
@@ -31,6 +31,14 @@ Les invités, eux, n'ont besoin d'aucun compte : ils ouvrent leur lien et répon
   - Colonne « Adultes » : les prénoms et noms séparés par `;`, par exemple `Marie Dupont ; Paul Dupont`.
   - Colonne « Enfants » : pareil, ou vide. Les invités peuvent aussi ajouter un enfant eux-mêmes.
   - Laissez la colonne « Code » vide, elle se remplit toute seule.
+  - Colonne « Langue » : `fr` pour le français, `es` pour l'espagnol. Vide = français.
+- **Programme** : une ligne par moment de la journée (cérémonie, vin d'honneur, repas du lendemain…).
+  - La date s'écrit `2027-08-21` (année-mois-jour), l'heure `15:00`.
+  - Les colonnes « ES » sont la traduction espagnole. Si vous les laissez vides, le texte français s'affiche.
+- **Hébergements** : une ligne par lieu où dormir (nom, adresse, téléphone, lien de réservation, prix, infos).
+- Remplacez les lignes « (exemple) » par vos vraies infos. Elles restent dans votre Sheet : seuls les invités qui ont un code valide les verront.
+
+> Vous aviez déjà installé les onglets avant ? Relancez simplement **Mariage > 1. Installer les onglets** : les onglets Programme et Hébergements et la colonne Langue sont ajoutés, et vos données existantes ne sont pas touchées.
 
 Gardez la ligne « Famille Exemple » pour l'instant, elle servira au test.
 

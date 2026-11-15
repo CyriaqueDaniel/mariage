@@ -14,6 +14,8 @@ const FEUILLE = {
   FOYERS: 'Foyers',
   REPONSES: 'Réponses',
   SYNTHESE: 'Synthèse',
+  PROGRAMME: 'Programme',
+  HEBERGEMENTS: 'Hébergements',
 };
 
 const P = {
@@ -38,7 +40,13 @@ const PARAMS_DEFAUT = [
   [P.URL, ''],
 ];
 
-const ENTETES_FOYERS = ['Code', 'Nom du foyer', 'Adultes (séparés par ;)', 'Enfants (séparés par ;)', 'Lien personnel', 'A répondu'];
+const ENTETES_FOYERS = ['Code', 'Nom du foyer', 'Adultes (séparés par ;)', 'Enfants (séparés par ;)', 'Lien personnel', 'A répondu', 'Langue (fr ou es)'];
+const LANGUES = ['fr', 'es'];
+
+// Onglets de contenu du site. Les colonnes « … ES » sont la traduction espagnole ;
+// si elles sont vides, le site affiche le texte français.
+const ENTETES_PROGRAMME = ['Date (AAAA-MM-JJ)', 'Heure', 'Moment FR', 'Moment ES', 'Nom du lieu', 'Adresse', 'Infos FR', 'Infos ES'];
+const ENTETES_HEBERGEMENTS = ['Nom', 'Adresse', 'Téléphone', 'Site ou lien de réservation', 'Prix', 'Infos FR', 'Infos ES'];
 
 const ENTETES_REPONSES = [
   'Mis à jour le', 'Code', 'Foyer', 'Personne', 'Adulte / Enfant', 'Âge enfant', 'Présent',
@@ -86,10 +94,39 @@ function installer() {
     foyers.getRange('A:A').setNumberFormat('@');
     foyers.getRange(1, 1, 1, ENTETES_FOYERS.length).setValues([ENTETES_FOYERS]);
     foyers.getRange(2, 1, 1, ENTETES_FOYERS.length).setValues([
-      ['', 'Famille Exemple (à supprimer)', 'Marie Exemple ; Paul Exemple', 'Léa Exemple', '', ''],
+      ['', 'Famille Exemple (à supprimer)', 'Marie Exemple ; Paul Exemple', 'Léa Exemple', '', '', 'fr'],
     ]);
     styleEntete_(foyers, ENTETES_FOYERS.length);
     foyers.setColumnWidth(2, 240).setColumnWidth(3, 300).setColumnWidth(4, 240).setColumnWidth(5, 420);
+  } else if (!foyers.getRange(1, 7).getDisplayValue()) {
+    // Onglet créé avant l'ajout des langues : on ajoute juste le titre de la colonne G.
+    foyers.getRange(1, 7).setValue(ENTETES_FOYERS[6]);
+    styleEntete_(foyers, ENTETES_FOYERS.length);
+  }
+
+  const programme = obtenirOuCreer_(ss, FEUILLE.PROGRAMME);
+  if (programme.getLastRow() === 0) {
+    programme.getRange('A:A').setNumberFormat('@');
+    programme.getRange('B:B').setNumberFormat('@');
+    programme.getRange(1, 1, 1, ENTETES_PROGRAMME.length).setValues([ENTETES_PROGRAMME]);
+    programme.getRange(2, 1, 3, ENTETES_PROGRAMME.length).setValues([
+      ['2027-08-21', '15:00', 'Cérémonie (exemple)', 'Ceremonia (ejemplo)', 'Nom du lieu', 'Adresse à compléter', 'Arrivez 15 minutes avant.', 'Lleguen 15 minutos antes.'],
+      ['2027-08-21', '18:00', "Vin d'honneur (exemple)", 'Cóctel (ejemplo)', 'Nom du lieu', 'Adresse à compléter', '', ''],
+      ['2027-08-22', '12:00', 'Repas du lendemain (exemple)', 'Comida del día siguiente (ejemplo)', 'Nom du lieu', 'Adresse à compléter', '', ''],
+    ]);
+    styleEntete_(programme, ENTETES_PROGRAMME.length);
+    programme.setColumnWidth(3, 220).setColumnWidth(4, 220).setColumnWidth(6, 300).setColumnWidth(7, 280).setColumnWidth(8, 280);
+  }
+
+  const hebergements = obtenirOuCreer_(ss, FEUILLE.HEBERGEMENTS);
+  if (hebergements.getLastRow() === 0) {
+    hebergements.getRange('C:C').setNumberFormat('@'); // garde le 0 du début des numéros
+    hebergements.getRange(1, 1, 1, ENTETES_HEBERGEMENTS.length).setValues([ENTETES_HEBERGEMENTS]);
+    hebergements.getRange(2, 1, 1, ENTETES_HEBERGEMENTS.length).setValues([
+      ['Gîte (exemple)', 'Adresse à compléter', '', '', 'Prix à compléter', 'À réserver vous-même.', 'Reserven ustedes mismos.'],
+    ]);
+    styleEntete_(hebergements, ENTETES_HEBERGEMENTS.length);
+    hebergements.setColumnWidth(1, 220).setColumnWidth(2, 300).setColumnWidth(4, 300).setColumnWidth(6, 280).setColumnWidth(7, 280);
   }
 
   const reponses = obtenirOuCreer_(ss, FEUILLE.REPONSES);
@@ -111,7 +148,8 @@ function installer() {
   SpreadsheetApp.getUi().alert(
     'Installation terminée.\n\n' +
     '1. Complétez l\'onglet « Paramètres ».\n' +
-    '2. Saisissez vos invités dans « Foyers » (un foyer par ligne).\n' +
+    '2. Saisissez vos invités dans « Foyers » (un foyer par ligne, langue fr ou es).\n' +
+    '   Remplacez les exemples des onglets « Programme » et « Hébergements ».\n' +
     '3. Déployez l\'appli (voir le guide), puis menu Mariage > Générer les codes et liens.'
   );
 }
@@ -233,9 +271,27 @@ function getInvitation(code) {
     resultat.erreur = 'code';
     return resultat;
   }
-  resultat.foyer = { code: code, nom: foyer.nom, adultes: foyer.adultes, enfants: foyer.enfants };
+  resultat.foyer = { code: code, nom: foyer.nom, adultes: foyer.adultes, enfants: foyer.enfants, langue: foyer.langue };
   resultat.reponse = lireReponse_(code);
+  resultat.programme = lireTableau_(FEUILLE.PROGRAMME, ['date', 'heure', 'momentFr', 'momentEs', 'lieu', 'adresse', 'infosFr', 'infosEs']);
+  resultat.hebergements = lireTableau_(FEUILLE.HEBERGEMENTS, ['nom', 'adresse', 'telephone', 'lien', 'prix', 'infosFr', 'infosEs']);
   return resultat;
+}
+
+/**
+ * Lit un onglet de contenu (Programme, Hébergements) : une ligne = un objet.
+ * Les lignes vides sont ignorées. Si l'onglet n'existe pas encore, renvoie une liste vide.
+ */
+function lireTableau_(nom, cles) {
+  const sh = SpreadsheetApp.getActive().getSheetByName(nom);
+  if (!sh || sh.getLastRow() < 2) return [];
+  return sh.getRange(2, 1, sh.getLastRow() - 1, cles.length).getDisplayValues()
+    .filter(function (r) { return r.some(function (v) { return String(v).trim(); }); })
+    .map(function (r) {
+      const o = {};
+      cles.forEach(function (cle, i) { o[cle] = String(r[i]).trim(); });
+      return o;
+    });
 }
 
 /** Appelé par la page : enregistre (ou remplace) la réponse d'un foyer. */
@@ -344,14 +400,16 @@ function lireParams_() {
 function trouverFoyer_(code) {
   const sh = feuille_(FEUILLE.FOYERS);
   if (sh.getLastRow() < 2) return null;
-  const lignes = sh.getRange(2, 1, sh.getLastRow() - 1, 4).getDisplayValues();
+  const lignes = sh.getRange(2, 1, sh.getLastRow() - 1, ENTETES_FOYERS.length).getDisplayValues();
   for (let i = 0; i < lignes.length; i++) {
     if (lignes[i][0].trim().toUpperCase() === code && lignes[i][1].trim()) {
+      const langue = String(lignes[i][6] || '').trim().toLowerCase().slice(0, 2);
       return {
         ligne: i + 2,
         nom: lignes[i][1].trim(),
         adultes: decouper_(lignes[i][2]),
         enfants: decouper_(lignes[i][3]),
+        langue: LANGUES.indexOf(langue) >= 0 ? langue : 'fr',
       };
     }
   }
