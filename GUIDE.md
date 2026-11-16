@@ -21,7 +21,7 @@ Les invités, eux, n'ont besoin d'aucun compte : ils ouvrent leur lien et répon
 1. Dans l'éditeur, en haut, choisissez la fonction `installer` dans la liste, puis cliquez sur **Exécuter**.
 2. Google demande une autorisation. C'est normal, c'est votre propre script :
    **Examiner les autorisations** > votre compte > **Paramètres avancés** > **Accéder à … (non sécurisé)** > **Autoriser**.
-3. Revenez sur la feuille : les onglets Paramètres, Foyers, Réponses, Synthèse, Infos pratiques et Hébergements sont créés.
+3. Revenez sur la feuille : les onglets Paramètres, Foyers, Réponses, Synthèse, Infos pratiques, Hébergements et Tarifs sont créés.
    Un menu **Mariage** apparaît aussi (rechargez la page s'il n'est pas là).
 
 ## 4. Remplir vos informations
@@ -38,11 +38,17 @@ Les invités, eux, n'ont besoin d'aucun compte : ils ouvrent leur lien et répon
   - Un lien (qui commence par `https://`, par exemple un plan d'accès) devient cliquable. Pour aller à la ligne dans une cellule : `Ctrl + Entrée`.
   - Les colonnes « ES » sont la traduction espagnole. Si vous les laissez vides, le texte français s'affiche.
 - **Hébergements** : une ligne par lieu où dormir (nom, adresse, téléphone, lien de réservation, prix, infos).
-  - Le prix n'a pas de colonne espagnole : écrivez-le sans mots, par exemple `90 € / nuit` ou `15 €`.
+  - Le prix n'a pas de colonne espagnole : écrivez-le sans mots, par exemple `90 €`, ou laissez-le vide si l'onglet Tarifs est rempli.
+- **Tarifs** : une ligne par formule (chambre double, chambre familiale, emplacement de camping…). Le site s'en sert pour dire à chaque foyer combien coûte une nuit pour lui, du moins cher au plus cher.
+  - « Hébergement » : exactement le même nom que dans l'onglet Hébergements.
+  - « Personnes max » : au-delà, la formule n'est pas proposée à ce foyer.
+  - Hôtel : prix de la chambre, et « Personnes comprises » = toutes (ex. chambre triple : max 3, prix 90, comprises 3).
+  - Camping : prix pour 1 adulte, « Personnes comprises » = 1, puis le prix par adulte et par enfant en plus.
+  - Le calcul compte les adultes et les enfants de l'onglet Foyers. C'est une estimation (sans petit-déjeuner ni taxe de séjour), le site le précise.
 - **Langue du site** : chaque invité voit le site dans la langue de son foyer, et peut changer avec le lien « Ver en español / Voir en français » en bas de page. Son choix est retenu sur son téléphone.
 - Remplacez les lignes « (exemple) » par vos vraies infos. Elles restent dans votre Sheet : seuls les invités qui ont un code valide les verront.
 
-> Vous aviez déjà installé les onglets avant ? Relancez simplement **Mariage > 1. Installer les onglets** : les onglets manquants (Infos pratiques, Hébergements) et la colonne Langue sont ajoutés, et vos données existantes ne sont pas touchées. L'ancien onglet « Programme » ne sert plus : vous pouvez le supprimer (clic droit sur l'onglet > Supprimer).
+> Vous aviez déjà installé les onglets avant ? Relancez simplement **Mariage > 1. Installer les onglets** : les onglets manquants (Infos pratiques, Hébergements, Tarifs) et la colonne Langue sont ajoutés, et vos données existantes ne sont pas touchées. L'ancien onglet « Programme » ne sert plus : vous pouvez le supprimer (clic droit sur l'onglet > Supprimer).
 
 Gardez la ligne « Famille Exemple » pour l'instant, elle servira au test.
 

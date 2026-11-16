@@ -177,6 +177,17 @@ main section { display: flex; flex-direction: column; align-items: flex-start; g
 .fiche h3 { margin: 0; font-size: 22px; line-height: 1.2; font-weight: 800; font-variation-settings: 'opsz' 48, 'wdth' 90; }
 .fiche p { margin: 0; }
 .etiquette-inline { font-weight: 700; }
+.pour-vous { color: var(--vert); }
+
+/* Conseil calculé pour le foyer, en tête de « Où dormir » */
+.conseil {
+  background: #e7f2ec; border-radius: 16px; padding: 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.conseil h3 { margin: 0; font-size: 20px; line-height: 1.25; font-weight: 800; }
+.conseil ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.conseil strong { color: var(--vert); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.conseil .aide { font-size: 15px; }
 
 /* ---------- Formulaire de réponse ---------- */
 .deja { margin: 0; padding: 10px 14px; border-radius: 12px; background: #e7f2ec; color: var(--vert); font-weight: 700; }

@@ -17,6 +17,7 @@ const FEUILLE = {
   SYNTHESE: 'Synthèse',
   INFOS: 'Infos pratiques',
   HEBERGEMENTS: 'Hébergements',
+  TARIFS: 'Tarifs',
 };
 
 const P = {
@@ -51,6 +52,9 @@ const LANGUES = ['fr', 'es'];
 // Le programme n'est pas sur le site : il est sur le faire-part.
 const ENTETES_INFOS = ['Question FR', 'Réponse FR', 'Question ES', 'Réponse ES'];
 const ENTETES_HEBERGEMENTS = ['Nom', 'Adresse', 'Téléphone', 'Site ou lien de réservation', 'Prix', 'Infos FR', 'Infos ES'];
+// Une ligne par formule (chambre double, emplacement…) : le site calcule le prix d'une nuit pour chaque foyer.
+const ENTETES_TARIFS = ['Hébergement (même nom que dans Hébergements)', 'Formule FR', 'Formule ES', 'Personnes max',
+  'Prix par nuit (€)', 'Personnes comprises dans ce prix', 'Par adulte en plus (€)', 'Par enfant en plus (€)'];
 
 const ENTETES_REPONSES = [
   'Mis à jour le', 'Code', 'Foyer', 'Personne', 'Adulte / Enfant', 'Âge enfant', 'Présent',
@@ -140,6 +144,17 @@ function installer() {
     hebergements.setColumnWidth(1, 220).setColumnWidth(2, 300).setColumnWidth(4, 300).setColumnWidth(6, 280).setColumnWidth(7, 280);
   }
 
+  const tarifs = obtenirOuCreer_(ss, FEUILLE.TARIFS);
+  if (tarifs.getLastRow() === 0) {
+    tarifs.getRange(1, 1, 1, ENTETES_TARIFS.length).setValues([ENTETES_TARIFS]);
+    tarifs.getRange(2, 1, 1, ENTETES_TARIFS.length).setValues([
+      ['Gîte (exemple)', 'Chambre pour 2 (exemple)', 'Habitación para 2 (ejemplo)', 2, 60, 2, '', ''],
+    ]);
+    styleEntete_(tarifs, ENTETES_TARIFS.length);
+    tarifs.setColumnWidth(1, 300).setColumnWidth(2, 240).setColumnWidth(3, 240);
+    tarifs.getRange(1, 1, 1, ENTETES_TARIFS.length).setWrap(true);
+  }
+
   const reponses = obtenirOuCreer_(ss, FEUILLE.REPONSES);
   if (reponses.getLastRow() === 0) {
     reponses.getRange('B:B').setNumberFormat('@');
@@ -160,7 +175,7 @@ function installer() {
     'Installation terminée.\n\n' +
     '1. Complétez l\'onglet « Paramètres ».\n' +
     '2. Saisissez vos invités dans « Foyers » (un foyer par ligne, langue fr ou es).\n' +
-    '   Répondez aux questions de « Infos pratiques » et remplacez l\'exemple de « Hébergements ».\n' +
+    '   Répondez aux questions de « Infos pratiques », remplacez les exemples de « Hébergements » et « Tarifs ».\n' +
     '3. Déployez l\'appli (voir le guide), puis menu Mariage > Générer les codes et liens.';
   try {
     SpreadsheetApp.getUi().alert(message);
@@ -324,6 +339,7 @@ function getInvitation(code) {
   resultat.reponse = lireReponse_(code);
   resultat.infos = lireTableau_(FEUILLE.INFOS, ['questionFr', 'reponseFr', 'questionEs', 'reponseEs']);
   resultat.hebergements = lireTableau_(FEUILLE.HEBERGEMENTS, ['nom', 'adresse', 'telephone', 'lien', 'prix', 'infosFr', 'infosEs']);
+  resultat.tarifs = lireTableau_(FEUILLE.TARIFS, ['hebergement', 'formuleFr', 'formuleEs', 'max', 'prix', 'inclus', 'adulte', 'enfant']);
   return resultat;
 }
 

@@ -48,6 +48,13 @@ const TEXTES = {
     appeler: 'Appeler',
     reserver: 'Réserver ou voir le site',
     prix: 'Prix :',
+    conseilTitre: 'Pour vous ({qui}), une nuit coûte environ :',
+    conseilLigne: '{formule} : <strong>{prix} €</strong>',
+    conseilNote: "Estimation d'après les tarifs connus, hors petit-déjeuner et taxe de séjour. Le prix exact vous sera donné à la réservation.",
+    pourVous: 'Pour vous :',
+    adultes: ['{n} adulte', '{n} adultes'],
+    enfants: ['{n} enfant', '{n} enfants'],
+    et: 'et',
     voirInfos: 'Lire les infos pratiques',
     voirDormir: 'Trouver où dormir',
     demo: "Mode démonstration : rien n'est enregistré.",
@@ -90,6 +97,13 @@ const TEXTES = {
     appeler: 'Llamar al',
     reserver: 'Reservar o ver la web',
     prix: 'Precio:',
+    conseilTitre: 'Para ti ({qui}), una noche cuesta unos:',
+    conseilLigne: '{formule}: <strong>{prix} €</strong>',
+    conseilNote: 'Estimación según las tarifas conocidas, sin desayuno ni tasa turística. El precio exacto te lo darán al reservar.',
+    pourVous: 'Para ti:',
+    adultes: ['{n} adulto', '{n} adultos'],
+    enfants: ['{n} niño', '{n} niños'],
+    et: 'y',
     voirInfos: 'Leer la información práctica',
     voirDormir: 'Encontrar dónde dormir',
     demo: 'Modo de demostración: no se guarda nada.',
@@ -120,6 +134,11 @@ const DEMO_INFOS = [
 const DEMO_HEBERGEMENTS = [
   { nom: 'Gîte des Tilleuls (exemple)', adresse: 'Route du Moulin, Exempleville', telephone: '01 23 45 67 89', lien: 'https://example.com', prix: '90 € / nuit', infosFr: 'À 5 minutes à pied de la fête.', infosEs: 'A 5 minutos a pie de la fiesta.' },
   { nom: 'Camping du Lac (exemple)', adresse: 'Bord du lac, Exempleville', telephone: '', lien: '', prix: '15 €', infosFr: 'Pensez à vos tentes !', infosEs: '¡No olvides tu tienda!' },
+];
+const DEMO_TARIFS = [
+  { hebergement: 'Gîte des Tilleuls (exemple)', formuleFr: 'Chambre double', formuleEs: 'Habitación doble', max: '2', prix: '70', inclus: '2', adulte: '', enfant: '' },
+  { hebergement: 'Gîte des Tilleuls (exemple)', formuleFr: 'Chambre familiale', formuleEs: 'Habitación familiar', max: '4', prix: '110', inclus: '4', adulte: '', enfant: '' },
+  { hebergement: 'Camping du Lac (exemple)', formuleFr: 'Emplacement avec votre tente', formuleEs: 'Parcela con tu tienda', max: '6', prix: '14,20', inclus: '1', adulte: '6', enfant: '5,20' },
 ];
 
 /* ---------- Petits outils ---------- */
@@ -190,7 +209,7 @@ async function obtenirInvitation(code) {
   if (CODES_DEMO.includes(code) || !API_URL) {
     await new Promise((ok) => setTimeout(ok, 300)); // imite le temps de réponse d'internet
     const foyer = DEMO_FOYERS[code];
-    return foyer ? { params: DEMO_PARAMS, foyer, reponse: null, infos: DEMO_INFOS, hebergements: DEMO_HEBERGEMENTS, demo: true } : { erreur: 'code' };
+    return foyer ? { params: DEMO_PARAMS, foyer, reponse: null, infos: DEMO_INFOS, hebergements: DEMO_HEBERGEMENTS, tarifs: DEMO_TARIFS, demo: true } : { erreur: 'code' };
   }
   const rep = await fetch(API_URL + '?action=invitation&code=' + encodeURIComponent(code));
   if (!rep.ok) throw new Error('HTTP ' + rep.status);
@@ -265,7 +284,7 @@ function afficherSite(brouillon) {
   $('#limite').textContent = limite ? t('limite', { date: limite }) : '';
   $('#bandeau-demo').hidden = !etat.donnees.demo;
   afficherInfos(etat.donnees.infos || []);
-  afficherDormir(etat.donnees.hebergements || []);
+  afficherDormir(etat.donnees.hebergements || [], etat.donnees.tarifs || [], foyer);
   afficherReponse(brouillon);
   montrerEcran('ecran-site');
   afficherOnglet();
@@ -305,16 +324,67 @@ function afficherInfos(liste) {
     </details>`).join('');
 }
 
-/** Où dormir : une fiche par hébergement. */
-function afficherDormir(liste) {
+/** « 14,20 € » ou « 14.2 » → 14.2. Une case vide vaut 0. */
+const nombre = (s) => parseFloat(String(s ?? '').replace(',', '.').replace(/[^\d.]/g, '')) || 0;
+
+/**
+ * Prix d'une nuit d'une formule pour ce foyer. Les personnes comprises dans le prix sont d'abord des adultes,
+ * puis chaque personne en plus est facturée (adulte ou enfant). null si le foyer est trop nombreux pour la formule.
+ */
+function prixNuit(f, adultes, enfants) {
+  const max = nombre(f.max);
+  if (max && adultes + enfants > max) return null;
+  const inclus = nombre(f.inclus);
+  const adultesEnPlus = Math.max(0, adultes - inclus);
+  const enfantsEnPlus = Math.max(0, enfants - Math.max(0, inclus - adultes));
+  return nombre(f.prix) + adultesEnPlus * nombre(f.adulte) + enfantsEnPlus * nombre(f.enfant);
+}
+
+/** Pour chaque hébergement, la formule la moins chère qui convient au foyer. Résultat trié du moins cher au plus cher. */
+function meilleuresFormules(tarifs, foyer) {
+  const a = Math.max(1, (foyer.adultes || []).length), e = (foyer.enfants || []).length;
+  const parLieu = {};
+  tarifs.forEach((f) => {
+    const prix = prixNuit(f, a, e);
+    if (prix === null || !prix) return;
+    const cle = f.hebergement.trim().toLowerCase();
+    if (!parLieu[cle] || prix < parLieu[cle].prix) parLieu[cle] = { formule: f, prix };
+  });
+  return Object.values(parLieu).sort((x, y) => x.prix - y.prix);
+}
+
+function texteFoyer(foyer) {
+  const accord = (cle, n) => t(cle)[n > 1 ? 1 : 0].replace('{n}', n);
+  const a = Math.max(1, (foyer.adultes || []).length), e = (foyer.enfants || []).length;
+  return e ? `${accord('adultes', a)} ${t('et')} ${accord('enfants', e)}` : accord('adultes', a);
+}
+
+const euros = (n) => Math.round(n).toLocaleString(etat.langue);
+
+/** Où dormir : un conseil calculé pour le foyer, puis une fiche par hébergement. */
+function afficherDormir(liste, tarifs, foyer) {
   const zone = $('#liste-dormir');
   if (!liste.length) { zone.innerHTML = `<p class="aide">${esc(t('dormirVide'))}</p>`; return; }
-  zone.innerHTML = liste.map((h) => {
+  const choix = meilleuresFormules(tarifs, foyer);
+  const pourLieu = (nom) => choix.find((c) => c.formule.hebergement.trim().toLowerCase() === nom.trim().toLowerCase());
+  const conseil = choix.length ? `
+    <section class="conseil" aria-labelledby="titre-conseil">
+      <h3 id="titre-conseil">${esc(t('conseilTitre', { qui: texteFoyer(foyer) }))}</h3>
+      <ul>
+        ${choix.map((c) => `<li>${t('conseilLigne', { formule: `${esc(c.formule.hebergement)}, ${esc(champ(c.formule, 'formule').toLowerCase())}`, prix: esc(euros(c.prix)) })}</li>`).join('')}
+      </ul>
+      <p class="aide">${esc(t('conseilNote'))}</p>
+    </section>` : '';
+  // Les fiches suivent le même ordre que le conseil : la moins chère pour ce foyer en premier.
+  const rang = (h) => { const i = choix.indexOf(pourLieu(h.nom)); return i < 0 ? choix.length : i; };
+  zone.innerHTML = conseil + [...liste].sort((x, y) => rang(x) - rang(y)).map((h) => {
     const tel = String(h.telephone || '').replace(/[^\d+]/g, '');
     const lien = lienSur(h.lien);
+    const c = pourLieu(h.nom);
     return `
       <article class="fiche">
         <h3>${esc(h.nom)}</h3>
+        ${c ? `<p class="pour-vous"><span class="etiquette-inline">${esc(t('pourVous'))}</span> ${esc(champ(c.formule, 'formule'))}, ~${esc(euros(c.prix))} €</p>` : ''}
         ${h.adresse ? `<p class="adresse">${esc(h.adresse)}</p>` : ''}
         ${h.prix ? `<p><span class="etiquette-inline">${esc(t('prix'))}</span> ${esc(h.prix)}</p>` : ''}
         ${champ(h, 'infos') ? `<p class="aide">${esc(champ(h, 'infos'))}</p>` : ''}
