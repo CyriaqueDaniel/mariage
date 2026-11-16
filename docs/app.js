@@ -38,6 +38,17 @@ const TEXTES = {
     limite: 'Merci de répondre avant le {date}.',
     boutonRepondre: "Répondre à l'invitation",
     bientot: 'Cette page sera remplie à la prochaine étape.',
+    programmeIntro: 'Les horaires sont indicatifs : on vous attend dans la bonne humeur, pas au chronomètre.',
+    programmeVide: 'Le programme sera bientôt en ligne. Revenez dans quelques semaines.',
+    itineraire: 'Itinéraire',
+    itineraireAria: 'Itinéraire vers {lieu} (ouvre une carte)',
+    dormirIntro: 'Quelques adresses près du mariage. Pensez à réserver tôt : en août, ça part vite.',
+    dormirVide: 'La liste des hébergements arrive bientôt.',
+    appeler: 'Appeler',
+    reserver: 'Réserver ou voir le site',
+    prix: 'Prix',
+    voirProgramme: 'Voir le programme',
+    voirDormir: 'Trouver où dormir',
     demo: "Mode démonstration : rien n'est enregistré.",
     changerCode: "Ce n'est pas votre invitation ? Changer de code",
   },
@@ -53,6 +64,17 @@ const DEMO_FOYERS = {
   DEMO01: { code: 'DEMO01', nom: 'Famille Exemple', adultes: ['Marie Exemple', 'Paul Exemple'], enfants: ['Léa Exemple'], langue: 'fr' },
   DEMO02: { code: 'DEMO02', nom: 'Familia Ejemplo', adultes: ['Frida Ejemplo'], enfants: [], langue: 'es' },
 };
+// Lieux et adresses inventés : les vrais sont dans le Google Sheet.
+const DEMO_PROGRAMME = [
+  { date: '2027-08-21', heure: '15:00', momentFr: 'Cérémonie', momentEs: 'Ceremonia', lieu: 'Mairie (exemple)', adresse: 'Place de la Mairie, Exempleville', infosFr: 'Arrivez 15 minutes avant.', infosEs: 'Lleguen 15 minutos antes.' },
+  { date: '2027-08-21', heure: '17:30', momentFr: "Vin d'honneur", momentEs: 'Cóctel', lieu: 'Le Jardin (exemple)', adresse: 'Chemin des Vignes, Exempleville', infosFr: 'Parking sur place.', infosEs: 'Aparcamiento en el lugar.' },
+  { date: '2027-08-21', heure: '20:00', momentFr: 'Dîner et soirée dansante', momentEs: 'Cena y baile', lieu: 'Le Jardin (exemple)', adresse: 'Chemin des Vignes, Exempleville', infosFr: '', infosEs: '' },
+  { date: '2027-08-22', heure: '12:00', momentFr: 'Repas du lendemain', momentEs: 'Comida del día siguiente', lieu: 'Le Jardin (exemple)', adresse: 'Chemin des Vignes, Exempleville', infosFr: 'Chacun apporte un plat à partager.', infosEs: 'Cada uno trae un plato para compartir.' },
+];
+const DEMO_HEBERGEMENTS = [
+  { nom: 'Gîte des Tilleuls (exemple)', adresse: 'Route du Moulin, Exempleville', telephone: '01 23 45 67 89', lien: 'https://example.com', prix: 'Environ 90 € la nuit', infosFr: 'À 5 minutes à pied de la fête.', infosEs: 'A 5 minutos a pie de la fiesta.' },
+  { nom: 'Camping du Lac (exemple)', adresse: 'Bord du lac, Exempleville', telephone: '', lien: '', prix: '15 € la tente', infosFr: 'Pensez à vos tentes !', infosEs: '¡No olviden sus tiendas!' },
+];
 
 /* ---------- Petits outils ---------- */
 const $ = (s) => document.querySelector(s);
@@ -89,7 +111,7 @@ async function obtenirInvitation(code) {
   if (CODES_DEMO.includes(code) || !API_URL) {
     await new Promise((ok) => setTimeout(ok, 300)); // imite le temps de réponse d'internet
     const foyer = DEMO_FOYERS[code];
-    return foyer ? { params: DEMO_PARAMS, foyer, reponse: null, programme: [], hebergements: [], demo: true } : { erreur: 'code' };
+    return foyer ? { params: DEMO_PARAMS, foyer, reponse: null, programme: DEMO_PROGRAMME, hebergements: DEMO_HEBERGEMENTS, demo: true } : { erreur: 'code' };
   }
   const rep = await fetch(API_URL + '?action=invitation&code=' + encodeURIComponent(code));
   if (!rep.ok) throw new Error('HTTP ' + rep.status);
@@ -160,8 +182,81 @@ function afficherSite() {
   $('#compte').innerHTML = texteCompte(params.iso);
   $('#limite').textContent = params.limite ? t('limite', { date: params.limite }) : '';
   $('#bandeau-demo').hidden = !etat.donnees.demo;
+  afficherProgramme(etat.donnees.programme || []);
+  afficherDormir(etat.donnees.hebergements || []);
   montrerEcran('ecran-site');
   afficherOnglet();
+}
+
+/** Prend le texte espagnol s'il existe et que le foyer est hispanophone, sinon le français. */
+function champ(obj, nom) {
+  return (etat.langue === 'es' && obj[nom + 'Es']) || obj[nom + 'Fr'] || '';
+}
+
+/** Lien vers une carte (Google Maps, qui ouvre l'appli de cartes sur téléphone). */
+const lienCarte = (adresse) => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(adresse);
+
+/** N'accepte que les liens web (http/https) : on ne fait confiance à aucun texte, même venant du Sheet. */
+const lienSur = (url) => (/^https?:\/\//i.test(String(url).trim()) ? String(url).trim() : '');
+
+function boutonItineraire(lieu, adresse) {
+  if (!adresse) return '';
+  return `<a class="btn btn-petit" href="${esc(lienCarte(adresse))}" target="_blank" rel="noopener"
+    aria-label="${esc(t('itineraireAria', { lieu: lieu || adresse }))}">${esc(t('itineraire'))}</a>`;
+}
+
+/** Programme : les moments regroupés par jour, dans l'ordre des dates et des heures. */
+function afficherProgramme(liste) {
+  const zone = $('#liste-programme');
+  if (!liste.length) { zone.innerHTML = `<p class="aide">${esc(t('programmeVide'))}</p>`; return; }
+  const tries = [...liste].sort((a, b) => (a.date + a.heure).localeCompare(b.date + b.heure));
+  const jours = {};
+  tries.forEach((m) => { (jours[m.date] = jours[m.date] || []).push(m); });
+  const formatJour = (iso) => {
+    const d = new Date(iso + 'T12:00:00');
+    if (isNaN(d)) return iso;
+    const s = d.toLocaleDateString(etat.langue, { weekday: 'long', day: 'numeric', month: 'long' });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  };
+  zone.innerHTML = Object.keys(jours).map((iso) => `
+    <section class="jour">
+      <h3 class="jour-titre">${esc(formatJour(iso))}</h3>
+      <ol class="frise">
+        ${jours[iso].map((m) => `
+          <li class="moment">
+            <span class="moment-heure">${esc(m.heure.replace(':', 'h'))}</span>
+            <div class="moment-texte">
+              <h4>${esc(champ(m, 'moment'))}</h4>
+              ${m.lieu ? `<p class="moment-lieu">${esc(m.lieu)}</p>` : ''}
+              ${m.adresse ? `<p class="adresse">${esc(m.adresse)}</p>` : ''}
+              ${champ(m, 'infos') ? `<p class="aide">${esc(champ(m, 'infos'))}</p>` : ''}
+              ${boutonItineraire(m.lieu, m.adresse)}
+            </div>
+          </li>`).join('')}
+      </ol>
+    </section>`).join('');
+}
+
+/** Où dormir : une fiche par hébergement. */
+function afficherDormir(liste) {
+  const zone = $('#liste-dormir');
+  if (!liste.length) { zone.innerHTML = `<p class="aide">${esc(t('dormirVide'))}</p>`; return; }
+  zone.innerHTML = liste.map((h) => {
+    const tel = String(h.telephone || '').replace(/[^\d+]/g, '');
+    const lien = lienSur(h.lien);
+    return `
+      <article class="fiche">
+        <h3>${esc(h.nom)}</h3>
+        ${h.adresse ? `<p class="adresse">${esc(h.adresse)}</p>` : ''}
+        ${h.prix ? `<p><span class="etiquette-inline">${esc(t('prix'))} :</span> ${esc(h.prix)}</p>` : ''}
+        ${champ(h, 'infos') ? `<p class="aide">${esc(champ(h, 'infos'))}</p>` : ''}
+        <div class="actions">
+          ${boutonItineraire(h.nom, h.adresse)}
+          ${tel ? `<a class="btn btn-petit btn-contour" href="tel:${esc(tel)}">${esc(t('appeler'))} ${esc(h.telephone)}</a>` : ''}
+          ${lien ? `<a class="btn btn-petit btn-contour" href="${esc(lien)}" target="_blank" rel="noopener">${esc(t('reserver'))}</a>` : ''}
+        </div>
+      </article>`;
+  }).join('');
 }
 
 function texteCompte(iso) {
@@ -188,7 +283,11 @@ function afficherOnglet() {
   if (id) {
     // Un changement d'onglet ramène en haut du contenu et y place le lecteur d'écran.
     $('#contenu').focus({ preventScroll: true });
-    window.scrollTo({ top: id === 'accueil' ? 0 : $('.onglets').offsetTop, behavior: 'instant' });
+    // Sur ordinateur, la barre d'onglets reste collée en haut : on décale d'autant pour ne pas cacher le titre.
+    const nav = $('.onglets');
+    const collee = getComputedStyle(nav).position === 'sticky' ? nav.offsetHeight : 0;
+    const haut = $('#contenu').getBoundingClientRect().top + window.scrollY - collee;
+    window.scrollTo({ top: id === 'accueil' ? 0 : haut, behavior: 'instant' });
   }
 }
 

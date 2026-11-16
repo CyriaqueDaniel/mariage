@@ -56,16 +56,22 @@
       <p id="compte" class="compte"></p>
       <p id="limite" class="aide"></p>
       <a class="btn" href="#repondre" data-t="boutonRepondre">Répondre à l'invitation</a>
+      <ul class="raccourcis">
+        <li><a href="#programme" data-t="voirProgramme">Voir le programme</a></li>
+        <li><a href="#dormir" data-t="voirDormir">Trouver où dormir</a></li>
+      </ul>
     </section>
 
     <section id="programme" data-panneau="programme" aria-labelledby="titre-programme" hidden>
       <h2 id="titre-programme" class="titre-section" data-t="ongletProgramme">Programme</h2>
-      <p class="aide" data-t="bientot">Cette page sera remplie à la prochaine étape.</p>
+      <p class="aide" data-t="programmeIntro"></p>
+      <div id="liste-programme" class="liste"></div>
     </section>
 
     <section id="dormir" data-panneau="dormir" aria-labelledby="titre-dormir" hidden>
       <h2 id="titre-dormir" class="titre-section" data-t="ongletDormir">Où dormir</h2>
-      <p class="aide" data-t="bientot">Cette page sera remplie à la prochaine étape.</p>
+      <p class="aide" data-t="dormirIntro"></p>
+      <div id="liste-dormir" class="liste"></div>
     </section>
 
     <section id="repondre" data-panneau="repondre" aria-labelledby="titre-repondre" hidden>

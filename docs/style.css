@@ -137,6 +137,49 @@ main section { display: flex; flex-direction: column; align-items: flex-start; g
 .compte { margin: 0; font-size: 22px; }
 .compte strong { color: var(--vert); font-size: 1.4em; font-weight: 800; font-variant-numeric: tabular-nums; }
 
+.btn-petit { min-height: 44px; padding: 8px 18px; font-size: 16px; }
+.btn-contour { background: transparent; color: var(--vert); box-shadow: inset 0 0 0 2px var(--vert); }
+.btn-contour:hover { background: #e7f2ec; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+
+/* Raccourcis de l'accueil */
+.raccourcis { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.raccourcis a { color: var(--bleu); font-weight: 700; text-underline-offset: 3px; }
+
+.liste { width: 100%; display: flex; flex-direction: column; gap: 28px; margin-top: 8px; }
+.adresse { margin: 0; }
+
+/* Programme : une frise par jour, l'heure en grand à gauche */
+.jour-titre {
+  margin: 0 0 6px; font-size: 24px; font-weight: 800;
+  font-variation-settings: 'opsz' 48, 'wdth' 85;
+  color: var(--bleu);
+}
+.frise { list-style: none; margin: 0; padding: 0; }
+.moment {
+  display: grid; grid-template-columns: 76px 1fr; gap: 12px;
+  padding: 16px 0; border-top: 1px solid var(--ligne);
+}
+.moment:first-child { border-top: 0; }
+.moment-heure {
+  font-size: 26px; line-height: 1; font-weight: 800; color: var(--vert);
+  font-variation-settings: 'opsz' 48, 'wdth' 80; font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+.moment-texte { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+.moment-texte h4 { margin: 0; font-size: 20px; line-height: 1.2; font-weight: 700; }
+.moment-lieu { margin: 0; font-weight: 600; }
+
+/* Où dormir : une fiche par lieu */
+.fiche {
+  background: #fff; border-radius: 16px; padding: 18px;
+  border-left: 6px solid var(--vert);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.fiche h3 { margin: 0; font-size: 22px; line-height: 1.2; font-weight: 800; font-variation-settings: 'opsz' 48, 'wdth' 90; }
+.fiche p { margin: 0; }
+.etiquette-inline { font-weight: 700; }
+
 .pied { max-width: 640px; margin: -24px auto 0; padding: 0 16px calc(var(--nav-h) + 24px); display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .demo { margin: 0; padding: 8px 12px; border: 2px dashed var(--soleil); border-radius: 10px; font-size: 16px; }
 
