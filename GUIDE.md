@@ -27,6 +27,7 @@ Les invités, eux, n'ont besoin d'aucun compte : ils ouvrent leur lien et répon
 ## 4. Remplir vos informations
 
 - **Paramètres** : vos prénoms, le lieu, la date limite, et surtout les **vrais noms des lieux de couchage** (séparés par `;`).
+  - Remplissez aussi « Date limite de réponse (AAAA-MM-JJ) », par exemple `2027-06-01` : le site l'écrit alors tout seul en français (« 1er juin 2027 ») ou en espagnol (« 1 de junio de 2027 »). Même chose pour la date du mariage.
 - **Foyers** : un foyer par ligne (un couple, une famille, une personne seule).
   - Colonne « Adultes » : les prénoms et noms séparés par `;`, par exemple `Marie Dupont ; Paul Dupont`.
   - Colonne « Enfants » : pareil, ou vide. Les invités peuvent aussi ajouter un enfant eux-mêmes.
@@ -36,6 +37,8 @@ Les invités, eux, n'ont besoin d'aucun compte : ils ouvrent leur lien et répon
   - La date s'écrit `2027-08-21` (année-mois-jour), l'heure `15:00`.
   - Les colonnes « ES » sont la traduction espagnole. Si vous les laissez vides, le texte français s'affiche.
 - **Hébergements** : une ligne par lieu où dormir (nom, adresse, téléphone, lien de réservation, prix, infos).
+  - Le prix n'a pas de colonne espagnole : écrivez-le sans mots, par exemple `90 € / nuit` ou `15 €`.
+- **Langue du site** : chaque invité voit le site dans la langue de son foyer, et peut changer avec le lien « Ver en español / Voir en français » en bas de page. Son choix est retenu sur son téléphone.
 - Remplacez les lignes « (exemple) » par vos vraies infos. Elles restent dans votre Sheet : seuls les invités qui ont un code valide les verront.
 
 > Vous aviez déjà installé les onglets avant ? Relancez simplement **Mariage > 1. Installer les onglets** : les onglets Programme et Hébergements et la colonne Langue sont ajoutés, et vos données existantes ne sont pas touchées.

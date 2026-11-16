@@ -46,19 +46,63 @@ const TEXTES = {
     dormirVide: 'La liste des hébergements arrive bientôt.',
     appeler: 'Appeler',
     reserver: 'Réserver ou voir le site',
-    prix: 'Prix',
+    prix: 'Prix :',
     voirProgramme: 'Voir le programme',
     voirDormir: 'Trouver où dormir',
     demo: "Mode démonstration : rien n'est enregistré.",
     changerCode: "Ce n'est pas votre invitation ? Changer de code",
+    titrePage: 'Notre mariage',
+    navAria: 'Sections du site',
+    autreLangue: 'Ver en español',
   },
-  es: {},
+  // Espagnol (forme « usted / ustedes »). À faire relire par une personne hispanophone.
+  es: {
+    allerContenu: 'Ir al contenido',
+    chargement: 'Cargando su invitación…',
+    connexionTitre: 'Su invitación',
+    connexionAide: 'Introduzca el código de 6 caracteres que recibió con la invitación.',
+    codeEtiquette: 'Código de invitación',
+    connexionBouton: 'Abrir mi invitación',
+    codeVide: 'Introduzca su código.',
+    codeInconnu: 'Este código no corresponde a ninguna invitación. Compruebe los 6 caracteres o escríbanos.',
+    erreurReseau: 'No se puede conectar con el sitio. Compruebe su conexión a internet y vuelva a intentarlo.',
+    reessayer: 'Reintentar',
+    seMarient: 'se casan',
+    ongletAccueil: 'Inicio',
+    ongletProgramme: 'Programa',
+    ongletDormir: 'Dónde dormir',
+    ongletRepondre: 'Responder',
+    bonjour: '¡Hola, {nom}!',
+    compteJours: 'Faltan <strong>{n}</strong> días',
+    compteDemain: '¡Es <strong>mañana</strong>!',
+    compteAujourdhui: '¡Es <strong>hoy</strong>!',
+    limite: 'Por favor, respondan antes del {date}.',
+    boutonRepondre: 'Responder a la invitación',
+    bientot: 'Esta página estará lista muy pronto.',
+    programmeIntro: 'Los horarios son orientativos: los esperamos con buen humor, no con cronómetro.',
+    programmeVide: 'El programa estará disponible pronto. Vuelvan dentro de unas semanas.',
+    itineraire: 'Cómo llegar',
+    itineraireAria: 'Cómo llegar a {lieu} (abre un mapa)',
+    dormirIntro: 'Algunos alojamientos cerca de la boda. Reserven pronto: en agosto se llenan rápido.',
+    dormirVide: 'La lista de alojamientos estará disponible pronto.',
+    appeler: 'Llamar al',
+    reserver: 'Reservar o ver la web',
+    prix: 'Precio:',
+    voirProgramme: 'Ver el programa',
+    voirDormir: 'Encontrar dónde dormir',
+    demo: 'Modo de demostración: no se guarda nada.',
+    changerCode: '¿No es su invitación? Cambiar de código',
+    titrePage: 'Nuestra boda',
+    navAria: 'Secciones del sitio',
+    autreLangue: 'Voir en français',
+  },
 };
+const LANGUES = Object.keys(TEXTES);
 
 /* ---------- Données de démonstration (fictives) ---------- */
 const DEMO_PARAMS = {
   maries: 'Morgane & Cyriaque', date: 'Samedi 21 août 2027', iso: '2027-08-21',
-  lieu: 'Lieu à compléter', limite: '1er juin 2027',
+  lieu: 'Lieu à compléter', limite: '1er juin 2027', limiteIso: '2027-06-01',
 };
 const DEMO_FOYERS = {
   DEMO01: { code: 'DEMO01', nom: 'Famille Exemple', adultes: ['Marie Exemple', 'Paul Exemple'], enfants: ['Léa Exemple'], langue: 'fr' },
@@ -72,8 +116,8 @@ const DEMO_PROGRAMME = [
   { date: '2027-08-22', heure: '12:00', momentFr: 'Repas du lendemain', momentEs: 'Comida del día siguiente', lieu: 'Le Jardin (exemple)', adresse: 'Chemin des Vignes, Exempleville', infosFr: 'Chacun apporte un plat à partager.', infosEs: 'Cada uno trae un plato para compartir.' },
 ];
 const DEMO_HEBERGEMENTS = [
-  { nom: 'Gîte des Tilleuls (exemple)', adresse: 'Route du Moulin, Exempleville', telephone: '01 23 45 67 89', lien: 'https://example.com', prix: 'Environ 90 € la nuit', infosFr: 'À 5 minutes à pied de la fête.', infosEs: 'A 5 minutos a pie de la fiesta.' },
-  { nom: 'Camping du Lac (exemple)', adresse: 'Bord du lac, Exempleville', telephone: '', lien: '', prix: '15 € la tente', infosFr: 'Pensez à vos tentes !', infosEs: '¡No olviden sus tiendas!' },
+  { nom: 'Gîte des Tilleuls (exemple)', adresse: 'Route du Moulin, Exempleville', telephone: '01 23 45 67 89', lien: 'https://example.com', prix: '90 € / nuit', infosFr: 'À 5 minutes à pied de la fête.', infosEs: 'A 5 minutos a pie de la fiesta.' },
+  { nom: 'Camping du Lac (exemple)', adresse: 'Bord du lac, Exempleville', telephone: '', lien: '', prix: '15 €', infosFr: 'Pensez à vos tentes !', infosEs: '¡No olviden sus tiendas!' },
 ];
 
 /* ---------- Petits outils ---------- */
@@ -98,6 +142,36 @@ function t(cle, vars) {
 function appliquerTextes() {
   document.documentElement.lang = etat.langue;
   document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t(el.dataset.t); });
+  document.querySelectorAll('[data-t-aria]').forEach((el) => { el.setAttribute('aria-label', t(el.dataset.tAria)); });
+  document.querySelectorAll('.bouton-langue').forEach((b) => { b.lang = etat.langue === 'fr' ? 'es' : 'fr'; });
+  if (!etat.donnees) document.title = t('titrePage');
+}
+
+/**
+ * Langue de départ : celle choisie à la main avec le bouton pour ce code, sinon celle du foyer (onglet Foyers),
+ * sinon celle du téléphone (avant que l'invité ait tapé son code), sinon le français.
+ */
+function choisirLangue(langueFoyer, code) {
+  const choix = code ? memoire.lire('langue-' + code) : '';
+  if (LANGUES.includes(choix)) return choix;
+  if (LANGUES.includes(langueFoyer)) return langueFoyer;
+  const tel = (navigator.language || '').slice(0, 2).toLowerCase();
+  return LANGUES.includes(tel) ? tel : 'fr';
+}
+
+function changerLangue() {
+  etat.langue = etat.langue === 'fr' ? 'es' : 'fr';
+  if (etat.code) memoire.ecrire('langue-' + etat.code, etat.langue); // choix retenu pour ce foyer seulement
+  if (etat.donnees) afficherSite(); else appliquerTextes();
+}
+
+/** Date AAAA-MM-JJ écrite dans la langue de l'invité : « samedi 21 août 2027 », « sábado, 21 de agosto de 2027 ». */
+function formaterDate(iso, options) {
+  const d = new Date(iso + 'T12:00:00');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || '') || isNaN(d)) return '';
+  let s = d.toLocaleDateString(etat.langue, options);
+  if (etat.langue === 'fr') s = s.replace(/^(\D*)1 /, '$11er '); // « 1er juin » en français
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function montrerEcran(id) {
@@ -123,7 +197,9 @@ function demarrer() {
   const url = new URLSearchParams(location.search);
   const code = normaliser(url.get('code') || memoire.lire('code'));
   dessinerGuirlande();
+  etat.langue = choisirLangue();
   appliquerTextes();
+  document.querySelectorAll('.bouton-langue').forEach((b) => b.addEventListener('click', changerLangue));
   $('#form-code').addEventListener('submit', (e) => {
     e.preventDefault();
     const c = normaliser($('#code').value);
@@ -150,7 +226,7 @@ async function charger(code) {
     if (r.erreur) throw new Error(r.message || r.erreur);
     etat.code = code;
     etat.donnees = r;
-    etat.langue = TEXTES[r.foyer.langue] ? r.foyer.langue : 'fr';
+    etat.langue = choisirLangue(r.foyer.langue, code);
     memoire.ecrire('code', code);
     // Retire le code de la barre d'adresse : il ne traîne pas si l'invité partage une capture d'écran.
     if (location.search) history.replaceState(null, '', location.pathname + location.hash);
@@ -177,10 +253,11 @@ function afficherSite() {
   appliquerTextes();
   document.title = params.maries;
   $('#maries').textContent = params.maries;
-  $('#date').textContent = params.date;
+  $('#date').textContent = formaterDate(params.iso, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) || params.date;
   $('#titre-accueil').textContent = t('bonjour', { nom: foyer.nom });
   $('#compte').innerHTML = texteCompte(params.iso);
-  $('#limite').textContent = params.limite ? t('limite', { date: params.limite }) : '';
+  const limite = formaterDate(params.limiteIso, { day: 'numeric', month: 'long', year: 'numeric' }) || params.limite;
+  $('#limite').textContent = limite ? t('limite', { date: limite }) : '';
   $('#bandeau-demo').hidden = !etat.donnees.demo;
   afficherProgramme(etat.donnees.programme || []);
   afficherDormir(etat.donnees.hebergements || []);
@@ -212,12 +289,7 @@ function afficherProgramme(liste) {
   const tries = [...liste].sort((a, b) => (a.date + a.heure).localeCompare(b.date + b.heure));
   const jours = {};
   tries.forEach((m) => { (jours[m.date] = jours[m.date] || []).push(m); });
-  const formatJour = (iso) => {
-    const d = new Date(iso + 'T12:00:00');
-    if (isNaN(d)) return iso;
-    const s = d.toLocaleDateString(etat.langue, { weekday: 'long', day: 'numeric', month: 'long' });
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  };
+  const formatJour = (iso) => formaterDate(iso, { weekday: 'long', day: 'numeric', month: 'long' }) || iso;
   zone.innerHTML = Object.keys(jours).map((iso) => `
     <section class="jour">
       <h3 class="jour-titre">${esc(formatJour(iso))}</h3>
@@ -248,7 +320,7 @@ function afficherDormir(liste) {
       <article class="fiche">
         <h3>${esc(h.nom)}</h3>
         ${h.adresse ? `<p class="adresse">${esc(h.adresse)}</p>` : ''}
-        ${h.prix ? `<p><span class="etiquette-inline">${esc(t('prix'))} :</span> ${esc(h.prix)}</p>` : ''}
+        ${h.prix ? `<p><span class="etiquette-inline">${esc(t('prix'))}</span> ${esc(h.prix)}</p>` : ''}
         ${champ(h, 'infos') ? `<p class="aide">${esc(champ(h, 'infos'))}</p>` : ''}
         <div class="actions">
           ${boutonItineraire(h.nom, h.adresse)}

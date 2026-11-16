@@ -24,6 +24,7 @@ const P = {
   ISO: 'Date du mariage (AAAA-MM-JJ)',
   LIEU: 'Lieu du mariage',
   LIMITE: 'Date limite de réponse',
+  LIMITE_ISO: 'Date limite de réponse (AAAA-MM-JJ)',
   COUCHAGE: 'Lieux de couchage (séparés par ;)',
   LENDEMAIN: 'Repas du lendemain',
   URL: "Adresse de l'appli (URL finissant par /exec)",
@@ -35,6 +36,7 @@ const PARAMS_DEFAUT = [
   [P.ISO, '2027-08-21'],
   [P.LIEU, 'Lieu à compléter'],
   [P.LIMITE, '1er juin 2027'],
+  [P.LIMITE_ISO, '2027-06-01'],
   [P.COUCHAGE, 'Sur place ; Gîte (à renommer) ; Hôtel (à renommer) ; Je rentre chez moi ; Autre'],
   [P.LENDEMAIN, 'Dimanche 22 août 2027, le midi'],
   [P.URL, ''],
@@ -87,6 +89,12 @@ function installer() {
     params.getRange(2, 1, PARAMS_DEFAUT.length, 2).setValues(PARAMS_DEFAUT);
     styleEntete_(params, 2);
     params.setColumnWidth(1, 320).setColumnWidth(2, 520);
+  } else {
+    // Onglet créé avec une ancienne version : on ajoute seulement les paramètres manquants.
+    const existants = params.getRange(1, 1, params.getLastRow(), 1).getDisplayValues().map(function (r) { return r[0].trim(); });
+    PARAMS_DEFAUT.forEach(function (ligne) {
+      if (existants.indexOf(ligne[0]) < 0) params.getRange(params.getLastRow() + 1, 1, 1, 2).setValues([ligne]);
+    });
   }
 
   const foyers = obtenirOuCreer_(ss, FEUILLE.FOYERS);
@@ -255,6 +263,7 @@ function getInvitation(code) {
       iso: params.iso,
       lieu: params.lieu,
       limite: params.limite,
+      limiteIso: params.limiteIso,
       lendemain: params.lendemain,
       couchages: params.couchages,
       allergenes: ALLERGENES,
@@ -391,6 +400,8 @@ function lireParams_() {
     iso: val(P.ISO),
     lieu: val(P.LIEU),
     limite: val(P.LIMITE),
+    // Pas de valeur par défaut ici : sur un ancien Sheet sans cette ligne, le site garde le texte ci-dessus.
+    limiteIso: dico[P.LIMITE_ISO] || '',
     lendemain: val(P.LENDEMAIN),
     couchages: decouper_(val(P.COUCHAGE)),
     url: val(P.URL),
