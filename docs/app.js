@@ -28,7 +28,7 @@ const TEXTES = {
     reessayer: 'Réessayer',
     seMarient: 'se marient',
     ongletAccueil: 'Accueil',
-    ongletProgramme: 'Programme',
+    ongletInfos: 'Infos',
     ongletDormir: 'Où dormir',
     ongletRepondre: 'Répondre',
     bonjour: 'Bonjour {nom} !',
@@ -38,8 +38,9 @@ const TEXTES = {
     limite: 'Merci de répondre avant le {date}.',
     boutonRepondre: "Répondre à l'invitation",
     bientot: 'Cette page sera remplie à la prochaine étape.',
-    programmeIntro: 'Les horaires sont indicatifs : on vous attend dans la bonne humeur, pas au chronomètre.',
-    programmeVide: 'Le programme sera bientôt en ligne. Revenez dans quelques semaines.',
+    infosTitre: 'Infos pratiques',
+    infosIntro: "Le programme de la journée est sur votre faire-part. Ici, les réponses aux questions qu'on nous pose le plus.",
+    infosVide: 'Les infos pratiques arrivent bientôt. Revenez dans quelques semaines.',
     itineraire: 'Itinéraire',
     itineraireAria: 'Itinéraire vers {lieu} (ouvre une carte)',
     dormirIntro: 'Quelques adresses près du mariage. Pensez à réserver tôt : en août, ça part vite.',
@@ -47,7 +48,7 @@ const TEXTES = {
     appeler: 'Appeler',
     reserver: 'Réserver ou voir le site',
     prix: 'Prix :',
-    voirProgramme: 'Voir le programme',
+    voirInfos: 'Lire les infos pratiques',
     voirDormir: 'Trouver où dormir',
     demo: "Mode démonstration : rien n'est enregistré.",
     changerCode: "Ce n'est pas votre invitation ? Changer de code",
@@ -69,7 +70,7 @@ const TEXTES = {
     reessayer: 'Reintentar',
     seMarient: 'se casan',
     ongletAccueil: 'Inicio',
-    ongletProgramme: 'Programa',
+    ongletInfos: 'Info',
     ongletDormir: 'Dónde dormir',
     ongletRepondre: 'Responder',
     bonjour: '¡Hola, {nom}!',
@@ -79,8 +80,9 @@ const TEXTES = {
     limite: 'Por favor, responde antes del {date}.',
     boutonRepondre: 'Responder a la invitación',
     bientot: 'Esta página estará lista muy pronto.',
-    programmeIntro: 'Los horarios son orientativos: te esperamos con buen humor, no con cronómetro.',
-    programmeVide: 'El programa estará disponible pronto. Vuelve dentro de unas semanas.',
+    infosTitre: 'Información práctica',
+    infosIntro: 'El programa del día viene en tu invitación. Aquí tienes las respuestas a las preguntas más frecuentes.',
+    infosVide: 'La información práctica estará disponible pronto. Vuelve dentro de unas semanas.',
     itineraire: 'Cómo llegar',
     itineraireAria: 'Cómo llegar a {lieu} (abre un mapa)',
     dormirIntro: 'Algunos alojamientos cerca de la boda. Reserva pronto: en agosto se llenan rápido.',
@@ -88,7 +90,7 @@ const TEXTES = {
     appeler: 'Llamar al',
     reserver: 'Reservar o ver la web',
     prix: 'Precio:',
-    voirProgramme: 'Ver el programa',
+    voirInfos: 'Leer la información práctica',
     voirDormir: 'Encontrar dónde dormir',
     demo: 'Modo de demostración: no se guarda nada.',
     changerCode: '¿No es tu invitación? Cambiar de código',
@@ -109,11 +111,11 @@ const DEMO_FOYERS = {
   DEMO02: { code: 'DEMO02', nom: 'Familia Ejemplo', adultes: ['Frida Ejemplo'], enfants: [], langue: 'es' },
 };
 // Lieux et adresses inventés : les vrais sont dans le Google Sheet.
-const DEMO_PROGRAMME = [
-  { date: '2027-08-21', heure: '15:00', momentFr: 'Cérémonie', momentEs: 'Ceremonia', lieu: 'Mairie (exemple)', adresse: 'Place de la Mairie, Exempleville', infosFr: 'Arrivez 15 minutes avant.', infosEs: 'Llega 15 minutos antes.' },
-  { date: '2027-08-21', heure: '17:30', momentFr: "Vin d'honneur", momentEs: 'Cóctel', lieu: 'Le Jardin (exemple)', adresse: 'Chemin des Vignes, Exempleville', infosFr: 'Parking sur place.', infosEs: 'Aparcamiento en el lugar.' },
-  { date: '2027-08-21', heure: '20:00', momentFr: 'Dîner et soirée dansante', momentEs: 'Cena y baile', lieu: 'Le Jardin (exemple)', adresse: 'Chemin des Vignes, Exempleville', infosFr: '', infosEs: '' },
-  { date: '2027-08-22', heure: '12:00', momentFr: 'Repas du lendemain', momentEs: 'Comida del día siguiente', lieu: 'Le Jardin (exemple)', adresse: 'Chemin des Vignes, Exempleville', infosFr: 'Chacun apporte un plat à partager.', infosEs: 'Cada uno trae un plato para compartir.' },
+const DEMO_INFOS = [
+  { questionFr: "Comment s'habiller ?", reponseFr: "Tenue d'été et chaussures confortables : la fête est en plein air, sur l'herbe.", questionEs: '¿Cómo me visto?', reponseEs: 'Ropa de verano y zapatos cómodos: la fiesta es al aire libre, sobre el césped.' },
+  { questionFr: 'Où se garer ?', reponseFr: 'Un parking est prévu sur place (exemple).', questionEs: '¿Dónde se puede aparcar?', reponseEs: 'Hay aparcamiento en el lugar (ejemplo).' },
+  { questionFr: 'Et pour les cadeaux ?', reponseFr: 'Votre présence nous suffit. Pour ceux qui le souhaitent, une urne sera là le jour J.\nPlus d\'infos : https://example.com', questionEs: '¿Y los regalos?', reponseEs: 'Con que vengas nos basta. Si quieres, habrá una urna el día de la boda.\nMás info: https://example.com' },
+  { questionFr: 'Question sans réponse (cachée)', reponseFr: '', questionEs: '', reponseEs: '' },
 ];
 const DEMO_HEBERGEMENTS = [
   { nom: 'Gîte des Tilleuls (exemple)', adresse: 'Route du Moulin, Exempleville', telephone: '01 23 45 67 89', lien: 'https://example.com', prix: '90 € / nuit', infosFr: 'À 5 minutes à pied de la fête.', infosEs: 'A 5 minutos a pie de la fiesta.' },
@@ -188,7 +190,7 @@ async function obtenirInvitation(code) {
   if (CODES_DEMO.includes(code) || !API_URL) {
     await new Promise((ok) => setTimeout(ok, 300)); // imite le temps de réponse d'internet
     const foyer = DEMO_FOYERS[code];
-    return foyer ? { params: DEMO_PARAMS, foyer, reponse: null, programme: DEMO_PROGRAMME, hebergements: DEMO_HEBERGEMENTS, demo: true } : { erreur: 'code' };
+    return foyer ? { params: DEMO_PARAMS, foyer, reponse: null, infos: DEMO_INFOS, hebergements: DEMO_HEBERGEMENTS, demo: true } : { erreur: 'code' };
   }
   const rep = await fetch(API_URL + '?action=invitation&code=' + encodeURIComponent(code));
   if (!rep.ok) throw new Error('HTTP ' + rep.status);
@@ -262,7 +264,7 @@ function afficherSite(brouillon) {
   const limite = formaterDate(params.limiteIso, { day: 'numeric', month: 'long', year: 'numeric' }) || params.limite;
   $('#limite').textContent = limite ? t('limite', { date: limite }) : '';
   $('#bandeau-demo').hidden = !etat.donnees.demo;
-  afficherProgramme(etat.donnees.programme || []);
+  afficherInfos(etat.donnees.infos || []);
   afficherDormir(etat.donnees.hebergements || []);
   afficherReponse(brouillon);
   montrerEcran('ecran-site');
@@ -286,31 +288,21 @@ function boutonItineraire(lieu, adresse) {
     aria-label="${esc(t('itineraireAria', { lieu: lieu || adresse }))}">${esc(t('itineraire'))}</a>`;
 }
 
-/** Programme : les moments regroupés par jour, dans l'ordre des dates et des heures. */
-function afficherProgramme(liste) {
-  const zone = $('#liste-programme');
-  if (!liste.length) { zone.innerHTML = `<p class="aide">${esc(t('programmeVide'))}</p>`; return; }
-  const tries = [...liste].sort((a, b) => (a.date + a.heure).localeCompare(b.date + b.heure));
-  const jours = {};
-  tries.forEach((m) => { (jours[m.date] = jours[m.date] || []).push(m); });
-  const formatJour = (iso) => formaterDate(iso, { weekday: 'long', day: 'numeric', month: 'long' }) || iso;
-  zone.innerHTML = Object.keys(jours).map((iso) => `
-    <section class="jour">
-      <h3 class="jour-titre">${esc(formatJour(iso))}</h3>
-      <ol class="frise">
-        ${jours[iso].map((m) => `
-          <li class="moment">
-            <span class="moment-heure">${esc(m.heure.replace(':', 'h'))}</span>
-            <div class="moment-texte">
-              <h4>${esc(champ(m, 'moment'))}</h4>
-              ${m.lieu ? `<p class="moment-lieu">${esc(m.lieu)}</p>` : ''}
-              ${m.adresse ? `<p class="adresse">${esc(m.adresse)}</p>` : ''}
-              ${champ(m, 'infos') ? `<p class="aide">${esc(champ(m, 'infos'))}</p>` : ''}
-              ${boutonItineraire(m.lieu, m.adresse)}
-            </div>
-          </li>`).join('')}
-      </ol>
-    </section>`).join('');
+/** Texte sûr avec liens cliquables : on échappe tout, puis on transforme les adresses http(s) en liens. */
+function texteAvecLiens(s) {
+  return esc(s).replace(/https?:\/\/[^\s<]*[^\s<.,;:!?)]/g, (url) => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+}
+
+/** Infos pratiques : une question = un volet qu'on ouvre d'un toucher. Sans réponse, la question est cachée. */
+function afficherInfos(liste) {
+  const zone = $('#liste-infos');
+  const remplies = liste.filter((q) => champ(q, 'question') && champ(q, 'reponse'));
+  if (!remplies.length) { zone.innerHTML = `<p class="aide">${esc(t('infosVide'))}</p>`; return; }
+  zone.innerHTML = remplies.map((q) => `
+    <details class="question">
+      <summary>${esc(champ(q, 'question'))}</summary>
+      <p>${texteAvecLiens(champ(q, 'reponse'))}</p>
+    </details>`).join('');
 }
 
 /** Où dormir : une fiche par hébergement. */
@@ -345,9 +337,9 @@ function texteCompte(iso) {
   return t('compteJours', { n: n.toLocaleString(etat.langue) });
 }
 
-const ONGLETS = ['accueil', 'programme', 'dormir', 'repondre'];
+const ONGLETS = ['accueil', 'infos', 'dormir', 'repondre'];
 
-/** Affiche l'onglet indiqué après le # de l'adresse (#programme…). Le bouton « retour » du téléphone marche donc. */
+/** Affiche l'onglet indiqué après le # de l'adresse (#infos…). Le bouton « retour » du téléphone marche donc. */
 function afficherOnglet() {
   if ($('#ecran-site').hidden) return;
   const id = location.hash.slice(1);

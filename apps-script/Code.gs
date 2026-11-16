@@ -7,6 +7,7 @@
  *  - Foyers     : la liste des invités, un foyer par ligne, avec son code personnel
  *  - Réponses   : une ligne par personne, remplie automatiquement par l'appli
  *  - Synthèse   : les totaux utiles (présents, allergies, couchage, lendemain…)
+ *  - Infos pratiques, Hébergements : contenu affiché sur le site des invités
  */
 
 const FEUILLE = {
@@ -14,7 +15,7 @@ const FEUILLE = {
   FOYERS: 'Foyers',
   REPONSES: 'Réponses',
   SYNTHESE: 'Synthèse',
-  PROGRAMME: 'Programme',
+  INFOS: 'Infos pratiques',
   HEBERGEMENTS: 'Hébergements',
 };
 
@@ -47,7 +48,8 @@ const LANGUES = ['fr', 'es'];
 
 // Onglets de contenu du site. Les colonnes « … ES » sont la traduction espagnole ;
 // si elles sont vides, le site affiche le texte français.
-const ENTETES_PROGRAMME = ['Date (AAAA-MM-JJ)', 'Heure', 'Moment FR', 'Moment ES', 'Nom du lieu', 'Adresse', 'Infos FR', 'Infos ES'];
+// Le programme n'est pas sur le site : il est sur le faire-part.
+const ENTETES_INFOS = ['Question FR', 'Réponse FR', 'Question ES', 'Réponse ES'];
 const ENTETES_HEBERGEMENTS = ['Nom', 'Adresse', 'Téléphone', 'Site ou lien de réservation', 'Prix', 'Infos FR', 'Infos ES'];
 
 const ENTETES_REPONSES = [
@@ -112,18 +114,21 @@ function installer() {
     styleEntete_(foyers, ENTETES_FOYERS.length);
   }
 
-  const programme = obtenirOuCreer_(ss, FEUILLE.PROGRAMME);
-  if (programme.getLastRow() === 0) {
-    programme.getRange('A:A').setNumberFormat('@');
-    programme.getRange('B:B').setNumberFormat('@');
-    programme.getRange(1, 1, 1, ENTETES_PROGRAMME.length).setValues([ENTETES_PROGRAMME]);
-    programme.getRange(2, 1, 3, ENTETES_PROGRAMME.length).setValues([
-      ['2027-08-21', '15:00', 'Cérémonie (exemple)', 'Ceremonia (ejemplo)', 'Nom du lieu', 'Adresse à compléter', 'Arrivez 15 minutes avant.', 'Llega 15 minutos antes.'],
-      ['2027-08-21', '18:00', "Vin d'honneur (exemple)", 'Cóctel (ejemplo)', 'Nom du lieu', 'Adresse à compléter', '', ''],
-      ['2027-08-22', '12:00', 'Repas du lendemain (exemple)', 'Comida del día siguiente (ejemplo)', 'Nom du lieu', 'Adresse à compléter', '', ''],
+  const infos = obtenirOuCreer_(ss, FEUILLE.INFOS);
+  if (infos.getLastRow() === 0) {
+    infos.getRange(1, 1, 1, ENTETES_INFOS.length).setValues([ENTETES_INFOS]);
+    // Questions de départ. Le site n'affiche une question que si sa « Réponse FR » est remplie.
+    infos.getRange(2, 1, 5, ENTETES_INFOS.length).setValues([
+      ['Comment s\'habiller ?', '', '¿Cómo me visto?', ''],
+      ['Les enfants sont-ils invités ?', '', '¿Pueden venir los niños?', ''],
+      ['Où se garer ?', '', '¿Dónde se puede aparcar?', ''],
+      ['Et pour les cadeaux ?', '', '¿Y los regalos?', ''],
+      ['Qui contacter le jour J ?', '', '¿A quién llamo el día de la boda?', ''],
     ]);
-    styleEntete_(programme, ENTETES_PROGRAMME.length);
-    programme.setColumnWidth(3, 220).setColumnWidth(4, 220).setColumnWidth(6, 300).setColumnWidth(7, 280).setColumnWidth(8, 280);
+    styleEntete_(infos, ENTETES_INFOS.length);
+    infos.setColumnWidth(1, 260).setColumnWidth(2, 420).setColumnWidth(3, 260).setColumnWidth(4, 420);
+    infos.getRange('B:B').setWrap(true);
+    infos.getRange('D:D').setWrap(true);
   }
 
   const hebergements = obtenirOuCreer_(ss, FEUILLE.HEBERGEMENTS);
@@ -157,7 +162,7 @@ function installer() {
     'Installation terminée.\n\n' +
     '1. Complétez l\'onglet « Paramètres ».\n' +
     '2. Saisissez vos invités dans « Foyers » (un foyer par ligne, langue fr ou es).\n' +
-    '   Remplacez les exemples des onglets « Programme » et « Hébergements ».\n' +
+    '   Répondez aux questions de « Infos pratiques » et remplacez l\'exemple de « Hébergements ».\n' +
     '3. Déployez l\'appli (voir le guide), puis menu Mariage > Générer les codes et liens.';
   try {
     SpreadsheetApp.getUi().alert(message);
@@ -319,13 +324,13 @@ function getInvitation(code) {
   }
   resultat.foyer = { code: code, nom: foyer.nom, adultes: foyer.adultes, enfants: foyer.enfants, langue: foyer.langue };
   resultat.reponse = lireReponse_(code);
-  resultat.programme = lireTableau_(FEUILLE.PROGRAMME, ['date', 'heure', 'momentFr', 'momentEs', 'lieu', 'adresse', 'infosFr', 'infosEs']);
+  resultat.infos = lireTableau_(FEUILLE.INFOS, ['questionFr', 'reponseFr', 'questionEs', 'reponseEs']);
   resultat.hebergements = lireTableau_(FEUILLE.HEBERGEMENTS, ['nom', 'adresse', 'telephone', 'lien', 'prix', 'infosFr', 'infosEs']);
   return resultat;
 }
 
 /**
- * Lit un onglet de contenu (Programme, Hébergements) : une ligne = un objet.
+ * Lit un onglet de contenu (Infos pratiques, Hébergements) : une ligne = un objet.
  * Les lignes vides sont ignorées. Si l'onglet n'existe pas encore, renvoie une liste vide.
  */
 function lireTableau_(nom, cles) {

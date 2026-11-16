@@ -149,26 +149,24 @@ main section { display: flex; flex-direction: column; align-items: flex-start; g
 .liste { width: 100%; display: flex; flex-direction: column; gap: 28px; margin-top: 8px; }
 .adresse { margin: 0; }
 
-/* Programme : une frise par jour, l'heure en grand à gauche */
-.jour-titre {
-  margin: 0 0 6px; font-size: 24px; font-weight: 800;
-  font-variation-settings: 'opsz' 48, 'wdth' 85;
-  color: var(--bleu);
+/* Infos pratiques : une question par ligne, on touche pour lire la réponse */
+#liste-infos { gap: 0; }
+.question { border-top: 1px solid var(--ligne); }
+.question:last-child { border-bottom: 1px solid var(--ligne); }
+.question summary {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  min-height: 56px; padding: 12px 0;
+  font-size: 20px; line-height: 1.25; font-weight: 700;
+  cursor: pointer; list-style: none;
 }
-.frise { list-style: none; margin: 0; padding: 0; }
-.moment {
-  display: grid; grid-template-columns: 76px 1fr; gap: 12px;
-  padding: 16px 0; border-top: 1px solid var(--ligne);
+.question summary::-webkit-details-marker { display: none; }
+.question summary::after {
+  content: '+'; flex: none;
+  font-size: 30px; line-height: 1; font-weight: 500; color: var(--vert);
 }
-.moment:first-child { border-top: 0; }
-.moment-heure {
-  font-size: 26px; line-height: 1; font-weight: 800; color: var(--vert);
-  font-variation-settings: 'opsz' 48, 'wdth' 80; font-variant-numeric: tabular-nums;
-  padding-top: 2px;
-}
-.moment-texte { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
-.moment-texte h4 { margin: 0; font-size: 20px; line-height: 1.2; font-weight: 700; }
-.moment-lieu { margin: 0; font-weight: 600; }
+.question[open] summary::after { content: '−'; }
+.question p { margin: 0 0 18px; white-space: pre-line; overflow-wrap: anywhere; }
+.question a { color: var(--bleu); font-weight: 700; }
 
 /* Où dormir : une fiche par lieu */
 .fiche {

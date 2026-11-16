@@ -6,7 +6,7 @@ Aucun code ne sera écrit avant que tu aies validé ce plan.
 
 | Sujet | Choix |
 |---|---|
-| Pages | Programme et lieux, hébergements, réponse (le formulaire existe déjà) |
+| Pages | Infos pratiques (questions/réponses), hébergements, réponse. Mis à jour le 16/11/2026 : plus de page Programme, le programme est sur le faire-part |
 | Hébergement du site | GitHub Pages |
 | Accès | Protégé par un code |
 | Langues | Français et espagnol, avec une langue choisie pour chaque foyer |
