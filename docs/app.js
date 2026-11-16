@@ -114,7 +114,7 @@ const DEMO_FOYERS = {
 const DEMO_INFOS = [
   { questionFr: "Comment s'habiller ?", reponseFr: "Tenue d'été et chaussures confortables : la fête est en plein air, sur l'herbe.", questionEs: '¿Cómo me visto?', reponseEs: 'Ropa de verano y zapatos cómodos: la fiesta es al aire libre, sobre el césped.' },
   { questionFr: 'Où se garer ?', reponseFr: 'Un parking est prévu sur place (exemple).', questionEs: '¿Dónde se puede aparcar?', reponseEs: 'Hay aparcamiento en el lugar (ejemplo).' },
-  { questionFr: 'Et pour les cadeaux ?', reponseFr: 'Votre présence nous suffit. Pour ceux qui le souhaitent, une urne sera là le jour J.\nPlus d\'infos : https://example.com', questionEs: '¿Y los regalos?', reponseEs: 'Con que vengas nos basta. Si quieres, habrá una urna el día de la boda.\nMás info: https://example.com' },
+  { questionFr: 'Qui contacter le jour J ?', reponseFr: 'Nos témoins (exemple).\nPlus d\'infos : https://example.com', questionEs: '¿A quién llamo el día de la boda?', reponseEs: 'A nuestros testigos (ejemplo).\nMás info: https://example.com' },
   { questionFr: 'Question sans réponse (cachée)', reponseFr: '', questionEs: '', reponseEs: '' },
 ];
 const DEMO_HEBERGEMENTS = [

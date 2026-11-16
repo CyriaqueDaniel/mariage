@@ -33,9 +33,9 @@ Les invités, eux, n'ont besoin d'aucun compte : ils ouvrent leur lien et répon
   - Colonne « Enfants » : pareil, ou vide. Les invités peuvent aussi ajouter un enfant eux-mêmes.
   - Laissez la colonne « Code » vide, elle se remplit toute seule.
   - Colonne « Langue » : `fr` pour le français, `es` pour l'espagnol. Vide = français.
-- **Infos pratiques** : une ligne par question que les invités se posent (tenue, enfants, parking, cadeaux, qui appeler…). Le programme n'est pas sur le site : il est sur le faire-part.
+- **Infos pratiques** : une ligne par question que les invités se posent (tenue, parking, qui appeler…). Le programme n'est pas sur le site : il est sur le faire-part.
   - Une question n'apparaît sur le site que si sa colonne « Réponse FR » est remplie. Pas de réponse = question cachée. Supprimez les lignes inutiles, ajoutez-en autant que vous voulez.
-  - Un lien (qui commence par `https://`, par exemple une cagnotte) devient cliquable. Pour aller à la ligne dans une cellule : `Ctrl + Entrée`.
+  - Un lien (qui commence par `https://`, par exemple un plan d'accès) devient cliquable. Pour aller à la ligne dans une cellule : `Ctrl + Entrée`.
   - Les colonnes « ES » sont la traduction espagnole. Si vous les laissez vides, le texte français s'affiche.
 - **Hébergements** : une ligne par lieu où dormir (nom, adresse, téléphone, lien de réservation, prix, infos).
   - Le prix n'a pas de colonne espagnole : écrivez-le sans mots, par exemple `90 € / nuit` ou `15 €`.
