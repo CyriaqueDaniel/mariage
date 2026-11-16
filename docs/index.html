@@ -56,7 +56,8 @@
       <h2 id="titre-accueil" class="titre-section"></h2>
       <p id="compte" class="compte"></p>
       <p id="limite" class="aide"></p>
-      <a class="btn" href="#repondre" data-t="boutonRepondre">Répondre à l'invitation</a>
+      <p id="deja-repondu" class="deja" data-t="dejaRepondu" hidden></p>
+      <a class="btn" href="#repondre" id="bouton-accueil">Répondre à l'invitation</a>
       <ul class="raccourcis">
         <li><a href="#programme" data-t="voirProgramme">Voir le programme</a></li>
         <li><a href="#dormir" data-t="voirDormir">Trouver où dormir</a></li>
@@ -77,7 +78,7 @@
 
     <section id="repondre" data-panneau="repondre" aria-labelledby="titre-repondre" hidden>
       <h2 id="titre-repondre" class="titre-section" data-t="ongletRepondre">Répondre</h2>
-      <p class="aide" data-t="bientot">Cette page sera remplie à la prochaine étape.</p>
+      <div id="zone-reponse" class="zone-reponse"></div>
     </section>
   </main>
 

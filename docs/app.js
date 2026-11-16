@@ -162,7 +162,10 @@ function choisirLangue(langueFoyer, code) {
 function changerLangue() {
   etat.langue = etat.langue === 'fr' ? 'es' : 'fr';
   if (etat.code) memoire.ecrire('langue-' + etat.code, etat.langue); // choix retenu pour ce foyer seulement
-  if (etat.donnees) afficherSite(); else appliquerTextes();
+  if (!etat.donnees) return appliquerTextes();
+  // On garde ce qui est déjà tapé dans le formulaire.
+  const brouillon = document.querySelector("#form-reponse") ? lireFormulaire() : null;
+  afficherSite(brouillon);
 }
 
 /** Date AAAA-MM-JJ écrite dans la langue de l'invité : « samedi 21 août 2027 », « sábado, 21 de agosto de 2027 ». */
@@ -248,7 +251,7 @@ function afficherConnexion(erreur, code) {
 }
 
 /* ---------- Le site ---------- */
-function afficherSite() {
+function afficherSite(brouillon) {
   const { params, foyer } = etat.donnees;
   appliquerTextes();
   document.title = params.maries;
@@ -261,6 +264,7 @@ function afficherSite() {
   $('#bandeau-demo').hidden = !etat.donnees.demo;
   afficherProgramme(etat.donnees.programme || []);
   afficherDormir(etat.donnees.hebergements || []);
+  afficherReponse(brouillon);
   montrerEcran('ecran-site');
   afficherOnglet();
 }
@@ -363,6 +367,430 @@ function afficherOnglet() {
   }
 }
 
+
+/* ---------- Onglet « Répondre » : le formulaire ---------- */
+// Les choix (allergènes, régimes…) arrivent du serveur en français, et c'est en français qu'on les renvoie :
+// le Google Sheet et ses totaux restent ainsi en français. On traduit seulement l'affichage.
+
+const TEXTES_FORMULAIRE = {
+  fr: {
+    repIntro: "Dites-nous qui sera là, et on s'occupe du reste.",
+    badgeAdulte: 'Adulte', badgeEnfant: 'Enfant',
+    presentOui: 'Sera là', presentNon: 'Ne pourra pas venir',
+    age: 'Âge', ans: 'ans',
+    allergieQ: 'Des allergies alimentaires ?', allergenesQ: 'Lesquelles ?',
+    autreAllergie: 'Autre allergie ou précision (gravité, traces…)',
+    regimeQ: 'Régime alimentaire',
+    prenomEnfant: "Prénom de l'enfant", retirer: 'Retirer', ajoutEnfant: '+ Ajouter un enfant',
+    couchageTitre: 'Où dormez-vous ?', couchageAide: 'La nuit qui suit le mariage.',
+    lendemainTitre: 'Le lendemain', lendemainAide: "{jour} : on prolonge la fête autour d'un repas. Qui reste ?",
+    lendemainDefaut: 'Le lendemain',
+    apporteQ: 'Apportez-vous quelque chose à manger ?', apportePlaceholder: 'Ex. : une quiche, un taboulé pour 8, des fruits…',
+    transportTitre: 'Venir au mariage', transportQ: 'Comment venez-vous ?', choisir: 'Choisir…',
+    covoitQ: 'Covoiturage', places: 'Places libres',
+    messageTitre: 'Un mot pour nous ?', messagePlaceholder: 'Une question, une précision, un petit mot…',
+    envoyer: 'Envoyer ma réponse', mettreAJour: 'Mettre à jour ma réponse', envoiEnCours: 'Envoi en cours…',
+    erreurEnvoi: "La réponse n'a pas pu être envoyée. Vérifiez votre connexion et réessayez.",
+    errPrenom: "Indiquez le prénom de l'enfant, ou retirez-le.",
+    errPresent: 'Indiquez si cette personne sera là.',
+    errAge: "Indiquez l'âge de l'enfant (0 à 17 ans).",
+    errAllergie: 'Indiquez si cette personne a des allergies.',
+    errAllergene: 'Cochez au moins un allergène ou précisez-le.',
+    errCouchage: 'Choisissez où vous dormez.',
+    errApporte: 'Dites-nous si vous apportez quelque chose.',
+    errApporteQuoi: 'Précisez ce que vous apportez.',
+    merciNouveau: "Merci, c'est noté !", merciDeja: 'Vous avez déjà répondu',
+    merciPresent: 'Nous avons hâte de vous voir.', merciAbsent: 'Vous allez nous manquer. Merci de nous avoir prévenus.',
+    votreReponse: 'Votre réponse',
+    recapAbsent: 'Ne pourra pas venir', recapPresent: '{nom} sera là', recapAge: '{n} ans',
+    recapAllergies: 'Allergies : {liste}', recapLendemain: 'reste le lendemain', recapAucune: 'Pas de contrainte alimentaire',
+    recapCouchage: 'Couchage', recapApporte: 'Pour le lendemain, vous apportez', recapTransport: 'Transport', recapMessage: 'Votre message',
+    modifier: 'Modifier ma réponse', enfantSansPrenom: 'Enfant sans prénom',
+    dejaRepondu: 'Vous avez déjà répondu. Merci !', boutonVoirReponse: 'Voir ou modifier ma réponse',
+  },
+  es: {
+    repIntro: 'Dinos quién vendrá y nosotros nos encargamos del resto.',
+    badgeAdulte: 'Adulto', badgeEnfant: 'Niño/a',
+    presentOui: 'Vendrá', presentNon: 'No podrá venir',
+    age: 'Edad', ans: 'años',
+    allergieQ: '¿Alergias alimentarias?', allergenesQ: '¿Cuáles?',
+    autreAllergie: 'Otra alergia o detalle (gravedad, trazas…)',
+    regimeQ: 'Dieta',
+    prenomEnfant: 'Nombre del niño o la niña', retirer: 'Quitar', ajoutEnfant: '+ Añadir un niño o una niña',
+    couchageTitre: 'Alojamiento', couchageAide: '¿Dónde dormirás la noche de la boda?',
+    lendemainTitre: 'El día siguiente', lendemainAide: '{jour}: alargamos la fiesta con una comida. ¿Quién se queda?',
+    lendemainDefaut: 'El día siguiente',
+    apporteQ: '¿Traes algo de comer?', apportePlaceholder: 'Ej.: una quiche, una ensalada para 8, fruta…',
+    transportTitre: 'El viaje', transportQ: '¿Cómo vienes?', choisir: 'Elegir…',
+    covoitQ: 'Compartir coche', places: 'Plazas libres',
+    messageTitre: '¿Unas palabras para nosotros?', messagePlaceholder: 'Una pregunta, un detalle, un mensajito…',
+    envoyer: 'Enviar mi respuesta', mettreAJour: 'Actualizar mi respuesta', envoiEnCours: 'Enviando…',
+    erreurEnvoi: 'No se pudo enviar la respuesta. Revisa tu conexión y vuelve a intentarlo.',
+    errPrenom: 'Escribe el nombre del niño o la niña, o quítalo.',
+    errPresent: 'Indica si esta persona vendrá.',
+    errAge: 'Indica la edad (de 0 a 17 años).',
+    errAllergie: 'Indica si esta persona tiene alergias.',
+    errAllergene: 'Marca al menos un alérgeno o descríbelo.',
+    errCouchage: 'Elige dónde dormirás.',
+    errApporte: 'Dinos si traes algo.',
+    errApporteQuoi: 'Indica qué traes.',
+    merciNouveau: '¡Gracias, apuntado!', merciDeja: 'Ya has respondido',
+    merciPresent: '¡Tenemos muchas ganas de verte!', merciAbsent: 'Te echaremos de menos. Gracias por avisarnos.',
+    votreReponse: 'Tu respuesta',
+    recapAbsent: 'No podrá venir', recapPresent: '{nom} vendrá', recapAge: '{n} años',
+    recapAllergies: 'Alergias: {liste}', recapLendemain: 'se queda al día siguiente', recapAucune: 'Sin restricciones alimentarias',
+    recapCouchage: 'Alojamiento', recapApporte: 'Para el día siguiente traes', recapTransport: 'Viaje', recapMessage: 'Tu mensaje',
+    modifier: 'Modificar mi respuesta', enfantSansPrenom: 'Niño/a sin nombre',
+    dejaRepondu: 'Ya has respondido. ¡Gracias!', boutonVoirReponse: 'Ver o modificar mi respuesta',
+  },
+};
+LANGUES.forEach((l) => Object.assign(TEXTES[l], TEXTES_FORMULAIRE[l]));
+
+// Traduction espagnole des valeurs envoyées par le serveur (elles restent en français dans le Sheet).
+const VALEURS_ES = {
+  Oui: 'Sí', Non: 'No',
+  Gluten: 'Gluten', 'Crustacés': 'Crustáceos', 'Œufs': 'Huevos', Poissons: 'Pescado', Arachides: 'Cacahuetes',
+  Soja: 'Soja', Lait: 'Leche', 'Fruits à coque': 'Frutos de cáscara', 'Céleri': 'Apio', Moutarde: 'Mostaza',
+  'Sésame': 'Sésamo', Sulfites: 'Sulfitos', Lupin: 'Altramuces', Mollusques: 'Moluscos',
+  Aucun: 'Ninguna', 'Végétarien': 'Vegetariana', 'Végan': 'Vegana', 'Sans porc': 'Sin cerdo', Halal: 'Halal',
+  Casher: 'Kosher', 'Sans gluten (non allergique)': 'Sin gluten (sin alergia)', 'Femme enceinte': 'Embarazada',
+  'Autre (préciser en message)': 'Otra (explícalo en el mensaje)',
+  Voiture: 'Coche', Train: 'Tren', Avion: 'Avión', Autre: 'Otro',
+  'Non merci': 'No, gracias', 'Je propose des places': 'Ofrezco plazas', 'Je cherche une place': 'Busco plaza',
+  'Sur place': 'En el lugar de la boda', 'Je rentre chez moi': 'Vuelvo a casa',
+};
+const libelle = (v) => (etat.langue === 'es' && VALEURS_ES[v]) || v;
+
+const DEMO_LISTES = {
+  couchages: ['Sur place', 'Gîte des Tilleuls (exemple)', 'Camping du Lac (exemple)', 'Je rentre chez moi', 'Autre'],
+  allergenes: ['Gluten', 'Crustacés', 'Œufs', 'Poissons', 'Arachides', 'Soja', 'Lait', 'Fruits à coque', 'Céleri', 'Moutarde', 'Sésame', 'Sulfites', 'Lupin', 'Mollusques'],
+  regimes: ['Aucun', 'Végétarien', 'Végan', 'Sans porc', 'Halal', 'Casher', 'Sans gluten (non allergique)', 'Femme enceinte', 'Autre (préciser en message)'],
+  transports: ['Voiture', 'Train', 'Avion', 'Autre'],
+  covoiturages: ['Non merci', 'Je propose des places', 'Je cherche une place'],
+};
+Object.assign(DEMO_PARAMS, DEMO_LISTES);
+
+/* -- Petits morceaux de formulaire -- */
+let uid = 0;
+const lendemainCoches = new Set();
+
+/** Groupe de boutons à choix unique (Oui / Non…), avec une vraie légende pour les lecteurs d'écran. */
+function groupe(nom, legende, options, valeur, cacherLegende) {
+  return `<fieldset class="groupe">
+    <legend class="question${cacherLegende ? ' masque' : ''}">${esc(legende)}</legend>
+    <div class="seg">${options.map(([v, l]) =>
+      `<label><input type="radio" name="${nom}" value="${esc(v)}" ${valeur === v ? 'checked' : ''}><span>${esc(l)}</span></label>`).join('')}</div>
+  </fieldset>`;
+}
+
+/** Texte du jour d'après le mariage, dans la langue de l'invité. */
+function texteLendemain(params) {
+  const d = new Date((params.iso || '') + 'T12:00:00');
+  if (isNaN(d)) return t('lendemainDefaut');
+  d.setDate(d.getDate() + 1);
+  const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return formaterDate(iso, { weekday: 'long', day: 'numeric', month: 'long' }) || t('lendemainDefaut');
+}
+
+/** Affiche l'onglet Répondre : le récapitulatif si le foyer a déjà répondu, sinon le formulaire. */
+function afficherReponse(brouillon) {
+  const rep = etat.donnees.reponse;
+  // Accueil : le bouton principal s'adapte
+  $('#bouton-accueil').textContent = rep ? t('boutonVoirReponse') : t('boutonRepondre');
+  $('#deja-repondu').hidden = !rep;
+  if (brouillon) afficherFormulaire(brouillon);
+  else if (rep) afficherMerci(rep, false);
+  else afficherFormulaire(null);
+}
+
+function afficherFormulaire(rep) {
+  const f = etat.donnees.foyer, p = etat.donnees.params;
+  let personnes;
+  if (rep) {
+    personnes = rep.personnes.map((x) => ({ ...x, ajoute: x.ajoute || (x.type === 'Enfant' && !f.enfants.includes(x.nom)) }));
+    f.adultes.concat(f.enfants).forEach((nom, i) => {
+      const type = i < f.adultes.length ? 'Adulte' : 'Enfant';
+      if (!personnes.some((x) => x.nom === nom && x.type === type)) personnes.push({ nom, type });
+    });
+  } else {
+    personnes = [...f.adultes.map((nom) => ({ nom, type: 'Adulte' })), ...f.enfants.map((nom) => ({ nom, type: 'Enfant' }))];
+  }
+  lendemainCoches.clear();
+  const zone = $('#zone-reponse');
+  zone.innerHTML = `
+    <form id="form-reponse" class="formulaire" novalidate>
+      <p class="aide">${esc(t('repIntro'))}</p>
+      <div id="personnes" class="pile"></div>
+      <button type="button" class="btn btn-petit btn-contour" id="ajout-enfant">${esc(t('ajoutEnfant'))}</button>
+
+      <section class="carte bloc-present" id="bloc-couchage" aria-labelledby="t-couchage">
+        <h3 id="t-couchage">${esc(t('couchageTitre'))}</h3>
+        <fieldset class="groupe">
+          <legend class="aide">${esc(t('couchageAide'))}</legend>
+          <div class="choix">${p.couchages.map((l) => `<label><input type="radio" name="lieu" value="${esc(l)}" ${rep && rep.lieu === l ? 'checked' : ''}><span>${esc(libelle(l))}</span></label>`).join('')}</div>
+        </fieldset>
+        <p class="msg-erreur" hidden></p>
+      </section>
+
+      <section class="carte bloc-present" id="bloc-lendemain" aria-labelledby="t-lendemain">
+        <h3 id="t-lendemain">${esc(t('lendemainTitre'))}</h3>
+        <fieldset class="groupe">
+          <legend class="aide">${esc(t('lendemainAide', { jour: texteLendemain(p) }))}</legend>
+          <div class="choix" id="liste-lendemain"></div>
+        </fieldset>
+        <div id="apport" class="pile" hidden>
+          ${groupe('apporte', t('apporteQ'), [['Oui', libelle('Oui')], ['Non', libelle('Non')]], rep && rep.apporte)}
+          <textarea class="champ" id="apporteQuoi" maxlength="300" aria-label="${esc(t('apporteQ'))}" placeholder="${esc(t('apportePlaceholder'))}" hidden>${esc(rep ? rep.apporteQuoi : '')}</textarea>
+        </div>
+        <p class="msg-erreur" hidden></p>
+      </section>
+
+      <section class="carte bloc-present" id="bloc-transport" aria-labelledby="t-transport">
+        <h3 id="t-transport">${esc(t('transportTitre'))}</h3>
+        <label class="question" for="transport">${esc(t('transportQ'))}</label>
+        <select class="champ" id="transport">
+          <option value="">${esc(t('choisir'))}</option>
+          ${p.transports.map((v) => `<option value="${esc(v)}" ${rep && rep.transport === v ? 'selected' : ''}>${esc(libelle(v))}</option>`).join('')}
+        </select>
+        ${groupe('covoit', t('covoitQ'), p.covoiturages.map((c) => [c, libelle(c)]), rep && rep.covoit)}
+        <label class="ligne" id="ligne-places" hidden>${esc(t('places'))}
+          <input class="champ champ-court" type="number" inputmode="numeric" min="1" max="9" id="places" value="${esc(rep ? rep.places : '')}"></label>
+      </section>
+
+      <section class="carte" aria-labelledby="t-message">
+        <h3 id="t-message"><label for="message">${esc(t('messageTitre'))}</label></h3>
+        <textarea class="champ" id="message" maxlength="1000" placeholder="${esc(t('messagePlaceholder'))}">${esc(rep ? rep.message : '')}</textarea>
+      </section>
+
+      <p class="msg-erreur" id="erreur-envoi" role="alert" hidden></p>
+      <button class="btn" type="submit" id="envoyer">${esc(etat.donnees.reponse ? t('mettreAJour') : t('envoyer'))}</button>
+    </form>`;
+
+  const conteneur = $('#personnes');
+  personnes.forEach((x) => conteneur.appendChild(cartePersonne(x)));
+
+  const form = $('#form-reponse');
+  form.addEventListener('change', (e) => {
+    if (e.target.closest('#liste-lendemain')) {
+      e.target.checked ? lendemainCoches.add(e.target.value) : lendemainCoches.delete(e.target.value);
+    }
+    majVisibilite();
+  });
+  form.addEventListener('input', (e) => { if (e.target.classList.contains('nom-enfant')) majLendemain(); });
+  form.addEventListener('click', (e) => {
+    if (e.target.classList.contains('retirer')) {
+      const c = e.target.closest('.personne');
+      lendemainCoches.delete(c.dataset.uid);
+      c.remove();
+      majVisibilite();
+    }
+  });
+  $('#ajout-enfant').addEventListener('click', () => {
+    const c = cartePersonne({ nom: '', type: 'Enfant', ajoute: true, present: 'Oui' });
+    conteneur.appendChild(c);
+    majVisibilite();
+    c.querySelector('.nom-enfant').focus();
+  });
+  form.addEventListener('submit', envoyerReponse);
+  majVisibilite();
+}
+
+function cartePersonne(x) {
+  const u = 'p' + (++uid);
+  const p = etat.donnees.params;
+  const enfant = x.type === 'Enfant';
+  if (x.resteLendemain === 'Oui') lendemainCoches.add(u);
+  const el = document.createElement('section');
+  el.className = 'carte personne';
+  el.dataset.uid = u;
+  el.dataset.type = x.type;
+  el.dataset.nom = x.nom || '';
+  if (x.ajoute) el.dataset.ajoute = '1';
+  el.setAttribute('aria-labelledby', u + '-titre');
+  el.innerHTML = `
+    <div class="personne-tete">
+      ${x.ajoute
+        ? `<input class="champ nom-enfant" id="${u}-titre" aria-label="${esc(t('prenomEnfant'))}" placeholder="${esc(t('prenomEnfant'))}" maxlength="60" value="${esc(x.nom)}">`
+        : `<h3 class="personne-nom" id="${u}-titre">${esc(x.nom)}</h3>`}
+      <span class="badge">${esc(enfant ? t('badgeEnfant') : t('badgeAdulte'))}</span>
+      ${x.ajoute ? `<button type="button" class="lien retirer">${esc(t('retirer'))}</button>` : ''}
+    </div>
+    ${groupe(u + '-present', x.nom || t('prenomEnfant'), [['Oui', t('presentOui')], ['Non', t('presentNon')]], x.present, true)}
+    <div class="details pile" hidden>
+      ${enfant ? `<label class="ligne">${esc(t('age'))} <input class="champ champ-court" type="number" inputmode="numeric" min="0" max="17" name="${u}-age" value="${esc(x.age)}"> ${esc(t('ans'))}</label>` : ''}
+      ${groupe(u + '-allergie', t('allergieQ'), [['Non', libelle('Non')], ['Oui', libelle('Oui')]], x.allergie)}
+      <fieldset class="groupe allergenes" hidden>
+        <legend class="question">${esc(t('allergenesQ'))}</legend>
+        <div class="puces">${p.allergenes.map((a) => `<label class="puce"><input type="checkbox" name="${u}-alg" value="${esc(a)}" ${(x.allergenes || []).includes(a) ? 'checked' : ''}><span>${esc(libelle(a))}</span></label>`).join('')}</div>
+        <input class="champ" name="${u}-autre" maxlength="200" aria-label="${esc(t('autreAllergie'))}" placeholder="${esc(t('autreAllergie'))}" value="${esc(x.autreAllergie)}">
+      </fieldset>
+      <label class="question" for="${u}-regime">${esc(t('regimeQ'))}</label>
+      <select class="champ" id="${u}-regime" name="${u}-regime">${p.regimes.map((r) => `<option value="${esc(r)}" ${x.regime === r ? 'selected' : ''}>${esc(libelle(r))}</option>`).join('')}</select>
+    </div>
+    <p class="msg-erreur" hidden></p>`;
+  return el;
+}
+
+const choisi = (n) => (document.querySelector(`[name="${n}"]:checked`) || {}).value || '';
+const nomDe = (c) => (c.dataset.ajoute ? c.querySelector('.nom-enfant').value.trim() : c.dataset.nom);
+
+/** Montre ou cache les questions selon les réponses déjà données. */
+function majVisibilite() {
+  const cartes = [...document.querySelectorAll('.personne')];
+  let presents = 0;
+  cartes.forEach((c) => {
+    const u = c.dataset.uid;
+    const la = choisi(u + '-present') === 'Oui';
+    if (la) presents++;
+    c.querySelector('.details').hidden = !la;
+    c.querySelector('.allergenes').hidden = choisi(u + '-allergie') !== 'Oui';
+  });
+  document.querySelectorAll('.bloc-present').forEach((b) => { b.hidden = presents === 0; });
+  majLendemain();
+  $('#apport').hidden = lendemainCoches.size === 0;
+  $('#apporteQuoi').hidden = choisi('apporte') !== 'Oui';
+  $('#ligne-places').hidden = choisi('covoit') !== 'Je propose des places';
+}
+
+function majLendemain() {
+  const presents = [...document.querySelectorAll('.personne')].filter((c) => choisi(c.dataset.uid + '-present') === 'Oui');
+  const ids = new Set(presents.map((c) => c.dataset.uid));
+  [...lendemainCoches].forEach((id) => { if (!ids.has(id)) lendemainCoches.delete(id); });
+  $('#liste-lendemain').innerHTML = presents.map((c) =>
+    `<label><input type="checkbox" value="${c.dataset.uid}" ${lendemainCoches.has(c.dataset.uid) ? 'checked' : ''}><span>${esc(nomDe(c) || t('enfantSansPrenom'))}</span></label>`).join('');
+}
+
+/** Lit le formulaire tel quel (sans vérifier). Sert à l'envoi et à garder la saisie si on change de langue. */
+function lireFormulaire() {
+  const personnes = [...document.querySelectorAll('.personne')].map((c) => {
+    const u = c.dataset.uid;
+    const ageEl = c.querySelector(`[name="${u}-age"]`);
+    return {
+      nom: nomDe(c), type: c.dataset.type, ajoute: !!c.dataset.ajoute,
+      age: ageEl ? ageEl.value.trim() : '',
+      present: choisi(u + '-present'),
+      allergie: choisi(u + '-allergie'),
+      allergenes: [...c.querySelectorAll(`[name="${u}-alg"]:checked`)].map((i) => i.value),
+      autreAllergie: c.querySelector(`[name="${u}-autre"]`).value.trim(),
+      regime: c.querySelector(`[name="${u}-regime"]`).value,
+      resteLendemain: lendemainCoches.has(u) ? 'Oui' : 'Non',
+    };
+  });
+  const presents = personnes.some((x) => x.present === 'Oui');
+  return {
+    personnes,
+    lieu: presents ? choisi('lieu') : '',
+    apporte: presents && lendemainCoches.size ? choisi('apporte') : '',
+    apporteQuoi: $('#apporteQuoi').value.trim(),
+    transport: presents ? $('#transport').value : '',
+    covoit: presents ? choisi('covoit') : '',
+    places: $('#places').value.trim(),
+    message: $('#message').value.trim(),
+  };
+}
+
+/** Vérifie la saisie et affiche les erreurs à côté des questions concernées. Renvoie null s'il en manque. */
+function verifier(data) {
+  document.querySelectorAll('#form-reponse .en-erreur').forEach((el) => el.classList.remove('en-erreur'));
+  document.querySelectorAll('#form-reponse .msg-erreur').forEach((el) => { if (el.id !== 'erreur-envoi') el.hidden = true; });
+  let premiere = null;
+  const erreur = (bloc, msg) => {
+    const m = bloc.querySelector(':scope > .msg-erreur');
+    m.textContent = msg; m.hidden = false;
+    bloc.classList.add('en-erreur');
+    if (!premiere) premiere = bloc;
+  };
+  const cartes = [...document.querySelectorAll('.personne')];
+  data.personnes.forEach((x, i) => {
+    const c = cartes[i];
+    if (!x.nom) erreur(c, t('errPrenom'));
+    else if (!x.present) erreur(c, t('errPresent'));
+    else if (x.present === 'Oui') {
+      if (x.type === 'Enfant' && (x.age === '' || +x.age < 0 || +x.age > 17)) erreur(c, t('errAge'));
+      else if (!x.allergie) erreur(c, t('errAllergie'));
+      else if (x.allergie === 'Oui' && !x.allergenes.length && !x.autreAllergie) erreur(c, t('errAllergene'));
+    }
+  });
+  const presents = data.personnes.some((x) => x.present === 'Oui');
+  if (presents && !data.lieu) erreur($('#bloc-couchage'), t('errCouchage'));
+  if (lendemainCoches.size && !data.apporte) erreur($('#bloc-lendemain'), t('errApporte'));
+  else if (data.apporte === 'Oui' && !data.apporteQuoi) erreur($('#bloc-lendemain'), t('errApporteQuoi'));
+  if (premiere) {
+    premiere.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const champ = premiere.querySelector('input, select, textarea');
+    if (champ) champ.focus({ preventScroll: true });
+    return null;
+  }
+  return data;
+}
+
+/** Envoie la réponse à Apps Script (ou la garde en mémoire en mode démo). */
+async function envoyerReponse(e) {
+  e.preventDefault();
+  const data = verifier(lireFormulaire());
+  if (!data) return;
+  const bouton = $('#envoyer'), msg = $('#erreur-envoi');
+  bouton.disabled = true; bouton.textContent = t('envoiEnCours'); msg.hidden = true;
+  try {
+    if (!etat.donnees.demo) {
+      // Corps en texte brut : évite le blocage « CORS » du navigateur avec Apps Script.
+      const rep = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'enregistrer', code: etat.code, data }) });
+      const r = await rep.json();
+      if (!r.ok) throw new Error(r.message || r.erreur || 'erreur');
+    } else {
+      await new Promise((ok) => setTimeout(ok, 400));
+    }
+    etat.donnees.reponse = data;
+    afficherMerci(data, true);
+    $('#bouton-accueil').textContent = t('boutonVoirReponse');
+    $('#deja-repondu').hidden = false;
+    $('#contenu').scrollIntoView({ block: 'start' });
+    $('#titre-merci').focus();
+  } catch (err) {
+    msg.textContent = t('erreurEnvoi');
+    msg.hidden = false;
+    bouton.disabled = false; bouton.textContent = t('reessayer');
+  }
+}
+
+/** Récapitulatif après l'envoi (ou au retour d'un invité qui a déjà répondu). */
+function afficherMerci(r, nouveau) {
+  const presents = r.personnes.filter((x) => x.present === 'Oui');
+  const ligne = (x) => {
+    if (x.present !== 'Oui') return `<li><span class="qui">${esc(x.nom)}</span><span class="quoi">${esc(t('recapAbsent'))}</span></li>`;
+    const infos = [];
+    if (x.type === 'Enfant' && x.age !== '') infos.push(t('recapAge', { n: esc(x.age) }));
+    if (x.allergie === 'Oui') infos.push(t('recapAllergies', { liste: esc([...x.allergenes.map(libelle), x.autreAllergie].filter(Boolean).join(', ')) }));
+    if (x.regime && x.regime !== 'Aucun') infos.push(esc(libelle(x.regime)));
+    if (x.resteLendemain === 'Oui') infos.push(esc(t('recapLendemain')));
+    return `<li><span class="qui">${esc(t('recapPresent', { nom: x.nom }))}</span><span class="quoi">${infos.join(', ') || esc(t('recapAucune'))}</span></li>`;
+  };
+  const transport = r.transport
+    ? esc(libelle(r.transport)) + (r.covoit && r.covoit !== 'Non merci' ? ', ' + esc(libelle(r.covoit)) + (r.places ? ` (${esc(r.places)})` : '') : '')
+    : '';
+  $('#zone-reponse').innerHTML = `
+    <div class="pile">
+      <div class="merci">
+        <h3 id="titre-merci" tabindex="-1">${esc(nouveau ? t('merciNouveau') : t('merciDeja'))}</h3>
+        <p>${esc(presents.length ? t('merciPresent') : t('merciAbsent'))}</p>
+      </div>
+      <section class="carte" aria-labelledby="t-recap">
+        <h3 id="t-recap">${esc(t('votreReponse'))}</h3>
+        <ul class="recap">
+          ${r.personnes.map(ligne).join('')}
+          ${presents.length && r.lieu ? `<li><span class="qui">${esc(t('recapCouchage'))}</span><span class="quoi">${esc(libelle(r.lieu))}</span></li>` : ''}
+          ${r.apporte === 'Oui' ? `<li><span class="qui">${esc(t('recapApporte'))}</span><span class="quoi">${esc(r.apporteQuoi)}</span></li>` : ''}
+          ${transport ? `<li><span class="qui">${esc(t('recapTransport'))}</span><span class="quoi">${transport}</span></li>` : ''}
+          ${r.message ? `<li><span class="qui">${esc(t('recapMessage'))}</span><span class="quoi">${esc(r.message)}</span></li>` : ''}
+        </ul>
+      </section>
+      <button class="btn btn-contour" type="button" id="modifier">${esc(t('modifier'))}</button>
+    </div>`;
+  $('#modifier').addEventListener('click', () => {
+    afficherFormulaire(etat.donnees.reponse);
+    $('#contenu').scrollIntoView({ block: 'start' });
+  });
+}
 
 /* ---------- Bouteilles fleuries suspendues (inspirées de la déco guinguette du mariage) ---------- */
 // Chaque bouteille pend à une ficelle de jute nouée au goulot, contient une guirlande lumineuse

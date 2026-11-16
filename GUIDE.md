@@ -79,5 +79,5 @@ Le futur site (sur GitHub Pages) demandera les infos à Apps Script. Pour vérif
 - Google affiche un petit bandeau gris en haut de la page (« Cette application a été créée par un utilisateur… »). On ne peut pas l'enlever avec cette solution gratuite.
 - Un invité peut revenir sur son lien et **modifier sa réponse** à tout moment. Sa nouvelle réponse remplace l'ancienne.
 - Ne modifiez pas les titres de colonnes des onglets Réponses et Foyers : l'appli s'en sert.
-- Aperçu du nouveau site : double-cliquez sur `docs/index.html` et tapez le code `DEMO01` (version française) ou `DEMO02` (foyer réglé en espagnol). Les infos sont fictives et rien n'est enregistré.
+- Aperçu du nouveau site : double-cliquez sur `docs/index.html` et tapez le code `DEMO01` (version française) ou `DEMO02` (foyer réglé en espagnol). Les infos sont fictives et rien n'est enregistré : vous pouvez remplir le formulaire de l'onglet « Répondre » pour l'essayer.
 - Aperçu sans Google : ouvrez `apps-script/Index.html` dans votre navigateur et tapez le code `DEMO01`. Rien n'est enregistré.
