@@ -36,7 +36,7 @@ const PARAMS_DEFAUT = [
   [P.MARIES, 'Morgane & Cyriaque'],
   [P.DATE, 'Samedi 21 août 2027'],
   [P.ISO, '2027-08-21'],
-  [P.LIEU, 'Lieu à compléter'],
+  [P.LIEU, 'Village de Kerpenhir, Locmariaquer'],
   [P.LIMITE, '1er juin 2027'],
   [P.LIMITE_ISO, '2027-06-01'],
   [P.COUCHAGE, 'Sur place ; Gîte (à renommer) ; Hôtel (à renommer) ; Je rentre chez moi ; Autre'],
@@ -122,10 +122,25 @@ function installer() {
   if (infos.getLastRow() === 0) {
     infos.getRange(1, 1, 1, ENTETES_INFOS.length).setValues([ENTETES_INFOS]);
     // Questions de départ. Le site n'affiche une question que si sa « Réponse FR » est remplie.
+    const carte = 'https://www.google.com/maps/search/?api=1&query=';
     infos.getRange(2, 1, 4, ENTETES_INFOS.length).setValues([
-      ['Comment venir ?', '', '¿Cómo llego?', ''],
+      ['Comment venir ?',
+        'Le mariage a lieu à Locmariaquer (Morbihan), au village de Kerpenhir.\n' +
+        'En voiture : environ 35 minutes depuis Vannes, 20 minutes depuis Auray.\n' +
+        'En train : gare d\'Auray, puis 20 minutes en voiture (proposez ou demandez du covoiturage dans « Répondre »).\n' +
+        'En avion : aéroports de Lorient (1 h de route) ou de Nantes (1 h 45).\n' +
+        'Carte : ' + carte + 'Kerpenhir+Locmariaquer',
+        '¿Cómo llego?',
+        'La boda es en Locmariaquer (Morbihan, Bretaña), en el pueblo de Kerpenhir.\n' +
+        'En coche: unos 35 minutos desde Vannes y 20 minutos desde Auray.\n' +
+        'En tren: estación de Auray y luego 20 minutos en coche (puedes ofrecer o pedir coche compartido en «Responder»).\n' +
+        'En avión: aeropuertos de Lorient (1 h en coche) o Nantes (1 h 45).\n' +
+        'Mapa: ' + carte + 'Kerpenhir+Locmariaquer'],
       ['Comment s\'habiller ?', '', '¿Cómo me visto?', ''],
-      ['Où se garer ?', '', '¿Dónde se puede aparcar?', ''],
+      ['Où se garer ?',
+        'Au parking de l\'entreprise Ker Nautik, à Locmariaquer.\nCarte : ' + carte + 'Ker+Nautik+Locmariaquer',
+        '¿Dónde se puede aparcar?',
+        'En el aparcamiento de la empresa Ker Nautik, en Locmariaquer.\nMapa: ' + carte + 'Ker+Nautik+Locmariaquer'],
       ['Qui contacter le jour J ?', '', '¿A quién llamo el día de la boda?', ''],
     ]);
     styleEntete_(infos, ENTETES_INFOS.length);
