@@ -122,7 +122,8 @@ function installer() {
   if (infos.getLastRow() === 0) {
     infos.getRange(1, 1, 1, ENTETES_INFOS.length).setValues([ENTETES_INFOS]);
     // Questions de départ. Le site n'affiche une question que si sa « Réponse FR » est remplie.
-    infos.getRange(2, 1, 3, ENTETES_INFOS.length).setValues([
+    infos.getRange(2, 1, 4, ENTETES_INFOS.length).setValues([
+      ['Comment venir ?', '', '¿Cómo llego?', ''],
       ['Comment s\'habiller ?', '', '¿Cómo me visto?', ''],
       ['Où se garer ?', '', '¿Dónde se puede aparcar?', ''],
       ['Qui contacter le jour J ?', '', '¿A quién llamo el día de la boda?', ''],

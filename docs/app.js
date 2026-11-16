@@ -126,6 +126,7 @@ const DEMO_FOYERS = {
 };
 // Lieux et adresses inventés : les vrais sont dans le Google Sheet.
 const DEMO_INFOS = [
+  { questionFr: 'Comment venir ?', reponseFr: 'En voiture, à 30 minutes de la gare (exemple).', questionEs: '¿Cómo llego?', reponseEs: 'En coche, a 30 minutos de la estación (ejemplo).' },
   { questionFr: "Comment s'habiller ?", reponseFr: "Tenue d'été et chaussures confortables : la fête est en plein air, sur l'herbe.", questionEs: '¿Cómo me visto?', reponseEs: 'Ropa de verano y zapatos cómodos: la fiesta es al aire libre, sobre el césped.' },
   { questionFr: 'Où se garer ?', reponseFr: 'Un parking est prévu sur place (exemple).', questionEs: '¿Dónde se puede aparcar?', reponseEs: 'Hay aparcamiento en el lugar (ejemplo).' },
   { questionFr: 'Qui contacter le jour J ?', reponseFr: 'Nos témoins (exemple).\nPlus d\'infos : https://example.com', questionEs: '¿A quién llamo el día de la boda?', reponseEs: 'A nuestros testigos (ejemplo).\nMás info: https://example.com' },
