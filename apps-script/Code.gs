@@ -153,13 +153,18 @@ function installer() {
     if (f && f.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(f);
   });
 
-  SpreadsheetApp.getUi().alert(
+  const message =
     'Installation terminée.\n\n' +
     '1. Complétez l\'onglet « Paramètres ».\n' +
     '2. Saisissez vos invités dans « Foyers » (un foyer par ligne, langue fr ou es).\n' +
     '   Remplacez les exemples des onglets « Programme » et « Hébergements ».\n' +
-    '3. Déployez l\'appli (voir le guide), puis menu Mariage > Générer les codes et liens.'
-  );
+    '3. Déployez l\'appli (voir le guide), puis menu Mariage > Générer les codes et liens.';
+  try {
+    SpreadsheetApp.getUi().alert(message);
+  } catch (err) {
+    // Lancé depuis l'éditeur sans le Sheet ouvert : pas de fenêtre possible, on l'écrit dans le journal.
+    Logger.log(message);
+  }
 }
 
 function construireSynthese_(sh) {
