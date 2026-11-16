@@ -118,7 +118,7 @@ function installer() {
     programme.getRange('B:B').setNumberFormat('@');
     programme.getRange(1, 1, 1, ENTETES_PROGRAMME.length).setValues([ENTETES_PROGRAMME]);
     programme.getRange(2, 1, 3, ENTETES_PROGRAMME.length).setValues([
-      ['2027-08-21', '15:00', 'Cérémonie (exemple)', 'Ceremonia (ejemplo)', 'Nom du lieu', 'Adresse à compléter', 'Arrivez 15 minutes avant.', 'Lleguen 15 minutos antes.'],
+      ['2027-08-21', '15:00', 'Cérémonie (exemple)', 'Ceremonia (ejemplo)', 'Nom du lieu', 'Adresse à compléter', 'Arrivez 15 minutes avant.', 'Llega 15 minutos antes.'],
       ['2027-08-21', '18:00', "Vin d'honneur (exemple)", 'Cóctel (ejemplo)', 'Nom du lieu', 'Adresse à compléter', '', ''],
       ['2027-08-22', '12:00', 'Repas du lendemain (exemple)', 'Comida del día siguiente (ejemplo)', 'Nom du lieu', 'Adresse à compléter', '', ''],
     ]);
@@ -131,7 +131,7 @@ function installer() {
     hebergements.getRange('C:C').setNumberFormat('@'); // garde le 0 du début des numéros
     hebergements.getRange(1, 1, 1, ENTETES_HEBERGEMENTS.length).setValues([ENTETES_HEBERGEMENTS]);
     hebergements.getRange(2, 1, 1, ENTETES_HEBERGEMENTS.length).setValues([
-      ['Gîte (exemple)', 'Adresse à compléter', '', '', 'Prix à compléter', 'À réserver vous-même.', 'Reserven ustedes mismos.'],
+      ['Gîte (exemple)', 'Adresse à compléter', '', '', 'Prix à compléter', 'À réserver vous-même.', 'Resérvalo tú mismo.'],
     ]);
     styleEntete_(hebergements, ENTETES_HEBERGEMENTS.length);
     hebergements.setColumnWidth(1, 220).setColumnWidth(2, 300).setColumnWidth(4, 300).setColumnWidth(6, 280).setColumnWidth(7, 280);

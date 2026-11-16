@@ -55,17 +55,17 @@ const TEXTES = {
     navAria: 'Sections du site',
     autreLangue: 'Ver en español',
   },
-  // Espagnol (forme « usted / ustedes »). À faire relire par une personne hispanophone.
+  // Espagnol, en tutoiement (« tú » : on s'adresse à la personne qui remplit). À faire relire par une personne hispanophone.
   es: {
     allerContenu: 'Ir al contenido',
-    chargement: 'Cargando su invitación…',
-    connexionTitre: 'Su invitación',
-    connexionAide: 'Introduzca el código de 6 caracteres que recibió con la invitación.',
+    chargement: 'Cargando tu invitación…',
+    connexionTitre: 'Tu invitación',
+    connexionAide: 'Escribe el código de 6 caracteres que recibiste con la invitación.',
     codeEtiquette: 'Código de invitación',
     connexionBouton: 'Abrir mi invitación',
-    codeVide: 'Introduzca su código.',
-    codeInconnu: 'Este código no corresponde a ninguna invitación. Compruebe los 6 caracteres o escríbanos.',
-    erreurReseau: 'No se puede conectar con el sitio. Compruebe su conexión a internet y vuelva a intentarlo.',
+    codeVide: 'Escribe tu código.',
+    codeInconnu: 'Este código no corresponde a ninguna invitación. Revisa los 6 caracteres o escríbenos.',
+    erreurReseau: 'No se puede conectar con el sitio. Revisa tu conexión a internet y vuelve a intentarlo.',
     reessayer: 'Reintentar',
     seMarient: 'se casan',
     ongletAccueil: 'Inicio',
@@ -76,14 +76,14 @@ const TEXTES = {
     compteJours: 'Faltan <strong>{n}</strong> días',
     compteDemain: '¡Es <strong>mañana</strong>!',
     compteAujourdhui: '¡Es <strong>hoy</strong>!',
-    limite: 'Por favor, respondan antes del {date}.',
+    limite: 'Por favor, responde antes del {date}.',
     boutonRepondre: 'Responder a la invitación',
     bientot: 'Esta página estará lista muy pronto.',
-    programmeIntro: 'Los horarios son orientativos: los esperamos con buen humor, no con cronómetro.',
-    programmeVide: 'El programa estará disponible pronto. Vuelvan dentro de unas semanas.',
+    programmeIntro: 'Los horarios son orientativos: te esperamos con buen humor, no con cronómetro.',
+    programmeVide: 'El programa estará disponible pronto. Vuelve dentro de unas semanas.',
     itineraire: 'Cómo llegar',
     itineraireAria: 'Cómo llegar a {lieu} (abre un mapa)',
-    dormirIntro: 'Algunos alojamientos cerca de la boda. Reserven pronto: en agosto se llenan rápido.',
+    dormirIntro: 'Algunos alojamientos cerca de la boda. Reserva pronto: en agosto se llenan rápido.',
     dormirVide: 'La lista de alojamientos estará disponible pronto.',
     appeler: 'Llamar al',
     reserver: 'Reservar o ver la web',
@@ -91,7 +91,7 @@ const TEXTES = {
     voirProgramme: 'Ver el programa',
     voirDormir: 'Encontrar dónde dormir',
     demo: 'Modo de demostración: no se guarda nada.',
-    changerCode: '¿No es su invitación? Cambiar de código',
+    changerCode: '¿No es tu invitación? Cambiar de código',
     titrePage: 'Nuestra boda',
     navAria: 'Secciones del sitio',
     autreLangue: 'Voir en français',
@@ -110,14 +110,14 @@ const DEMO_FOYERS = {
 };
 // Lieux et adresses inventés : les vrais sont dans le Google Sheet.
 const DEMO_PROGRAMME = [
-  { date: '2027-08-21', heure: '15:00', momentFr: 'Cérémonie', momentEs: 'Ceremonia', lieu: 'Mairie (exemple)', adresse: 'Place de la Mairie, Exempleville', infosFr: 'Arrivez 15 minutes avant.', infosEs: 'Lleguen 15 minutos antes.' },
+  { date: '2027-08-21', heure: '15:00', momentFr: 'Cérémonie', momentEs: 'Ceremonia', lieu: 'Mairie (exemple)', adresse: 'Place de la Mairie, Exempleville', infosFr: 'Arrivez 15 minutes avant.', infosEs: 'Llega 15 minutos antes.' },
   { date: '2027-08-21', heure: '17:30', momentFr: "Vin d'honneur", momentEs: 'Cóctel', lieu: 'Le Jardin (exemple)', adresse: 'Chemin des Vignes, Exempleville', infosFr: 'Parking sur place.', infosEs: 'Aparcamiento en el lugar.' },
   { date: '2027-08-21', heure: '20:00', momentFr: 'Dîner et soirée dansante', momentEs: 'Cena y baile', lieu: 'Le Jardin (exemple)', adresse: 'Chemin des Vignes, Exempleville', infosFr: '', infosEs: '' },
   { date: '2027-08-22', heure: '12:00', momentFr: 'Repas du lendemain', momentEs: 'Comida del día siguiente', lieu: 'Le Jardin (exemple)', adresse: 'Chemin des Vignes, Exempleville', infosFr: 'Chacun apporte un plat à partager.', infosEs: 'Cada uno trae un plato para compartir.' },
 ];
 const DEMO_HEBERGEMENTS = [
   { nom: 'Gîte des Tilleuls (exemple)', adresse: 'Route du Moulin, Exempleville', telephone: '01 23 45 67 89', lien: 'https://example.com', prix: '90 € / nuit', infosFr: 'À 5 minutes à pied de la fête.', infosEs: 'A 5 minutos a pie de la fiesta.' },
-  { nom: 'Camping du Lac (exemple)', adresse: 'Bord du lac, Exempleville', telephone: '', lien: '', prix: '15 €', infosFr: 'Pensez à vos tentes !', infosEs: '¡No olviden sus tiendas!' },
+  { nom: 'Camping du Lac (exemple)', adresse: 'Bord du lac, Exempleville', telephone: '', lien: '', prix: '15 €', infosFr: 'Pensez à vos tentes !', infosEs: '¡No olvides tu tienda!' },
 ];
 
 /* ---------- Petits outils ---------- */
