@@ -27,7 +27,7 @@ const P = {
   LIMITE_ISO: 'Date limite de réponse (AAAA-MM-JJ)',
   COUCHAGE: 'Lieux de couchage (séparés par ;)',
   LENDEMAIN: 'Repas du lendemain',
-  URL: "Adresse de l'appli (URL finissant par /exec)",
+  URL: 'Adresse du site des invités',
 };
 
 const PARAMS_DEFAUT = [
@@ -39,7 +39,7 @@ const PARAMS_DEFAUT = [
   [P.LIMITE_ISO, '2027-06-01'],
   [P.COUCHAGE, 'Sur place ; Gîte (à renommer) ; Hôtel (à renommer) ; Je rentre chez moi ; Autre'],
   [P.LENDEMAIN, 'Dimanche 22 août 2027, le midi'],
-  [P.URL, ''],
+  [P.URL, 'https://cyriaquedaniel.github.io/mariage/'],
 ];
 
 const ENTETES_FOYERS = ['Code', 'Nom du foyer', 'Adultes (séparés par ;)', 'Enfants (séparés par ;)', 'Lien personnel', 'A répondu', 'Langue (fr ou es)'];
@@ -144,8 +144,8 @@ function installer() {
     styleEntete_(reponses, ENTETES_REPONSES.length);
   }
 
-  const synthese = obtenirOuCreer_(ss, FEUILLE.SYNTHESE);
-  if (synthese.getLastRow() === 0) construireSynthese_(synthese);
+  // La Synthèse ne contient que des formules : on la reconstruit à chaque installation.
+  construireSynthese_(obtenirOuCreer_(ss, FEUILLE.SYNTHESE));
 
   // Supprime l'onglet vide créé par défaut avec le classeur.
   ['Feuille 1', 'Sheet1', 'Feuille1'].forEach(function (nom) {
@@ -181,7 +181,12 @@ function construireSynthese_(sh) {
     ['Personnes avec allergie', '=COUNTIFS(' + R + 'G2:G,"Oui",' + R + 'H2:H,"Oui")'],
     ['Restent le lendemain', '=COUNTIF(' + R + 'M2:M,"Oui")'],
   ];
-  sh.getRange(1, 1, totaux.length, 2).setValues(totaux);
+  sh.clear();
+  const sep = separateur_(sh);
+  totaux.forEach(function (t, i) {
+    sh.getRange(i + 1, 1).setValue(t[0]);
+    if (t[1]) sh.getRange(i + 1, 2).setFormula(formule_(t[1], sep));
+  });
 
   const tableaux = [
     ['D', 'Couchage (personnes présentes)', '=IFERROR(QUERY(' + Q + ',"select L, count(D) where G=\'Oui\' group by L label count(D) \'Personnes\'",1),"Aucune réponse")'],
@@ -193,11 +198,36 @@ function construireSynthese_(sh) {
   ];
   tableaux.forEach(function (t) {
     sh.getRange(t[0] + '1').setValue(t[1]).setFontWeight('bold');
-    sh.getRange(t[0] + '2').setFormula(t[2]);
+    sh.getRange(t[0] + '2').setFormula(formule_(t[2], sep));
   });
   sh.getRange('A1').setFontWeight('bold');
   sh.setColumnWidth(1, 220);
   sh.setFrozenRows(1);
+}
+
+/**
+ * Dans un Sheet réglé en français, la virgule est la virgule décimale et les formules
+ * séparent leurs arguments par « ; ». On teste ce que le Sheet comprend au lieu de deviner.
+ */
+function separateur_(sh) {
+  const essai = sh.getRange('Z1');
+  essai.setFormula('=SUM(1;2)');
+  SpreadsheetApp.flush();
+  const pointVirgule = essai.getValue() === 3;
+  essai.clear();
+  return pointVirgule ? ';' : ',';
+}
+
+/** Remplace les virgules séparatrices par le bon séparateur, sans toucher aux textes entre guillemets. */
+function formule_(f, sep) {
+  if (sep === ',') return f;
+  let dansTexte = false, r = '';
+  for (let i = 0; i < f.length; i++) {
+    const c = f.charAt(i);
+    if (c === '"') dansTexte = !dansTexte;
+    r += !dansTexte && c === ',' ? sep : c;
+  }
+  return r;
 }
 
 /* ------------------------------------------------------------------ */
@@ -215,7 +245,8 @@ function genererCodesEtLiens() {
 
   const valeurs = sh.getRange(2, 1, n, 2).getDisplayValues();
   const existants = new Set(valeurs.map(function (r) { return r[0].trim().toUpperCase(); }).filter(String));
-  const url = (lireParams_().url || ScriptApp.getService().getUrl() || '').trim();
+  // Les liens personnels mènent au site des invités (GitHub Pages), qui demande ensuite les infos à ce script.
+  const url = (lireParams_().url || '').trim();
 
   const codes = [];
   const liens = [];
@@ -234,7 +265,7 @@ function genererCodesEtLiens() {
 
   ui.alert(url
     ? 'Codes et liens générés. Envoyez à chaque foyer son lien personnel (colonne E).'
-    : 'Codes générés. Les liens apparaîtront quand vous aurez collé l\'adresse de l\'appli dans « Paramètres » (voir le guide). Relancez alors ce menu.');
+    : 'Codes générés. Les liens apparaîtront quand vous aurez écrit l\'adresse du site dans « Paramètres » (voir le guide). Relancez alors ce menu.');
 }
 
 function codeAleatoire_() {
@@ -252,9 +283,10 @@ function doGet(e) {
   const q = (e && e.parameter) || {};
   if (q.action === 'invitation') return repondreJson_(function () { return apiInvitation_(q.code); });
 
-  const params = lireParams_();
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('Mariage de ' + params.maries)
+  // Quelqu'un ouvre l'adresse du script directement : on le renvoie vers le site des invités.
+  const site = lireParams_().url.replace(/[<>"']/g, '');
+  return HtmlService.createHtmlOutput(
+    '<p style="font:18px sans-serif">Le site du mariage est ici : <a target="_top" href="' + site + '">' + site + '</a></p>')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
