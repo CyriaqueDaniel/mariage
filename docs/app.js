@@ -192,27 +192,66 @@ function afficherOnglet() {
   }
 }
 
-/* ---------- Bouteilles suspendues avec guirlandes lumineuses (comme la déco du mariage) ---------- */
 
-// Trois formes de bouteilles, dessinées à partir du haut du goulot (point 0,0).
-// « corps » = zone où l'on peut placer les petites lumières.
+/* ---------- Bouteilles fleuries suspendues (inspirées de la déco guinguette du mariage) ---------- */
+// Chaque bouteille pend à une ficelle de jute nouée au goulot, contient une guirlande lumineuse
+// enroulée, et un petit bouquet sort du goulot. Tout est dessiné en SVG : pas d'image à charger.
+
+// Formes dessinées à partir du haut du goulot (point 0,0). « corps » = zone intérieure pour la guirlande.
 const FORMES_BOUTEILLES = {
-  vin: { d: 'M-4 0h8v14q0 4 7 8v34q0 4-4 4h-14q-4 0-4-4v-34q7-4 7-8z', corps: { x: -8, y: 26, l: 16, h: 30 } },
-  ronde: { d: 'M-3 0h6v12a15 15 0 1 1-6 0z', corps: { x: -9, y: 18, l: 18, h: 18 } },
-  bocal: { d: 'M-6 0h12v6q6 2 6 8v24q0 4-4 4h-16q-4 0-4-4v-24q0-6 6-8z', corps: { x: -9, y: 16, l: 18, h: 20 } },
+  vin: { d: 'M-4 0h8v14q0 4 7 8v34q0 4-4 4h-14q-4 0-4-4v-34q7-4 7-8z', corps: { x: -8, y: 26, l: 16, h: 30 }, col: 8 },
+  ronde: { d: 'M-3 0h6v12a15 15 0 1 1-6 0z', corps: { x: -9, y: 17, l: 18, h: 20 }, col: 6 },
+  bocal: { d: 'M-6 0h12v6q6 2 6 8v24q0 4-4 4h-16q-4 0-4-4v-24q0-6 6-8z', corps: { x: -9, y: 16, l: 18, h: 22 }, col: 12 },
 };
 
-function dessinerGuirlande() {
-  // Verre : rouge, orange vif, violet (les bouteilles), plus le vert et le bleu du mariage.
-  const verres = ['var(--rouge)', 'var(--orange)', 'var(--violet)', 'var(--vert)', 'var(--rouge)', 'var(--violet)', 'var(--orange)'];
-  const formes = ['vin', 'ronde', 'bocal', 'vin', 'ronde', 'vin', 'bocal'];
-  const fils = [22, 46, 14, 38, 18, 50, 28]; // longueur du fil de chaque bouteille, irrégulière comme dans un arbre
-  const lumieres = ['#fff3b0', '#ffd166', '#ff9ec4', '#a0f0ff', '#c8ffb0'];
-  const largeur = 400, creux = 22, n = formes.length;
+const COULEURS_FLEURS = { rouge: '#e02f2f', orange: '#ff7b00', violet: '#8a3ffc', jaune: '#f6c343', rose: '#ff6fa5', blanc: '#fffdf5' };
 
-  // Petite fonction pseudo-aléatoire stable : les lumières sont toujours au même endroit.
-  let graine = 7;
-  const hasard = () => ((graine = (graine * 9301 + 49297) % 233280) / 233280);
+/** Une fleur : marguerite, gerbera (pétales fins), pompon (dahlia) ou grappe (aster). */
+function fleur(type, x, y, r, couleur) {
+  const petales = (nb, rx, ry, dist, fill) => {
+    let s = '';
+    for (let p = 0; p < nb; p++) {
+      s += `<ellipse cx="0" cy="${-dist}" rx="${rx}" ry="${ry}" fill="${fill}" transform="rotate(${(360 / nb) * p})"/>`;
+    }
+    return s;
+  };
+  let contenu = '';
+  if (type === 'marguerite') contenu = petales(10, 1.5, 1.9 * r, 2.8 * r, COULEURS_FLEURS.blanc) + `<circle r="${1.8 * r}" fill="#f2b705"/>`;
+  if (type === 'gerbera') contenu = petales(14, 1.3, 2.2 * r, 3.3 * r, couleur) + `<circle r="${2 * r}" fill="#5a2d0c"/>`;
+  if (type === 'pompon') contenu = `<circle r="${5 * r}" fill="${couleur}"/>` + petales(8, 1.4 * r, 1.8 * r, 2.6 * r, 'rgba(0,0,0,.18)') + `<circle r="${1.4 * r}" fill="rgba(0,0,0,.25)"/>`;
+  if (type === 'grappe') {
+    [[0, 0], [-3.2, 1.6], [3.2, 1.4], [-1.6, -3], [1.8, -3.2]].forEach(([a, b]) => {
+      contenu += `<circle cx="${a * r}" cy="${b * r}" r="${2.1 * r}" fill="${couleur}"/><circle cx="${a * r}" cy="${b * r}" r="${0.7 * r}" fill="#f6c343"/>`;
+    });
+  }
+  return `<g transform="translate(${x} ${y})">${contenu}</g>`;
+}
+
+/** Bouquet qui sort du goulot : feuillage, puis 3 ou 4 fleurs. */
+function bouquet(fleurs) {
+  const feuilles = [[-7, -6, -40], [7, -7, 35], [-3, -14, -12], [4, -15, 18], [0, -4, 0]]
+    .map(([x, y, a], k) => `<ellipse cx="${x}" cy="${y}" rx="2.6" ry="7.5" fill="${k % 2 ? '#2f6b3a' : '#4c9a55'}" transform="rotate(${a} ${x} ${y})"/>`).join('');
+  const places = [[-8, -10], [8, -12], [0, -19], [-1, -7]];
+  return feuilles + fleurs.map(([type, coul], k) => fleur(type, places[k][0], places[k][1], k === 2 ? 1.1 : 0.95, COULEURS_FLEURS[coul])).join('');
+}
+
+function dessinerGuirlande() {
+  // Verre rouge, orange vif et violet, comme les futures bouteilles du mariage.
+  const verres = ['rouge', 'orange', 'violet', 'rouge', 'violet', 'orange', 'rouge'];
+  const formes = ['vin', 'ronde', 'bocal', 'vin', 'ronde', 'vin', 'bocal'];
+  const fils = [36, 56, 32, 48, 34, 58, 42]; // longueur de ficelle : irrégulière, comme dans un arbre
+  const bouquets = [
+    [['gerbera', 'orange'], ['marguerite'], ['pompon', 'rouge'], ['grappe', 'violet']],
+    [['marguerite'], ['grappe', 'violet'], ['gerbera', 'jaune']],
+    [['pompon', 'orange'], ['gerbera', 'rouge'], ['marguerite'], ['grappe', 'rose']],
+    [['grappe', 'violet'], ['marguerite'], ['gerbera', 'orange']],
+    [['gerbera', 'rouge'], ['pompon', 'jaune'], ['marguerite'], ['grappe', 'violet']],
+    [['marguerite'], ['gerbera', 'rose'], ['pompon', 'orange']],
+    [['grappe', 'violet'], ['gerbera', 'orange'], ['marguerite'], ['pompon', 'rouge']],
+  ];
+  const ampoules = ['#fff1b8', '#ffd27a', '#ffe9a8', '#ff9ec4', '#a0f0ff', '#fff1b8', '#c8ffb0'];
+  const largeur = 400, creux = 22, n = formes.length, echelle = 1.4;
+  const jute = '#c9a46b';
 
   let bouteilles = '';
   for (let i = 0; i < n; i++) {
@@ -220,33 +259,52 @@ function dessinerGuirlande() {
     const u = x / largeur;
     const y = 4 + 4 * creux * u * (1 - u); // point de la ficelle principale (elle forme un arc)
     const f = FORMES_BOUTEILLES[formes[i]], c = f.corps, fil = fils[i];
-    let points = '';
-    for (let k = 0; k < 7; k++) {
-      const px = c.x + hasard() * c.l, py = fil + c.y + hasard() * c.h;
-      points += `<circle class="lumiere" style="--k:${(i * 7 + k) % 9}" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.6" fill="${lumieres[(i + k) % lumieres.length]}"/>`;
-    }
+
+    // Guirlande lumineuse : un fil qui zigzague dans la bouteille, avec des ampoules dessus.
+    const pts = [];
+    for (let k = 0; k <= 5; k++) pts.push([c.x + (k % 2 ? c.l - 1 : 1), c.y + (k * c.h) / 5]);
+    let lumieres = '';
+    pts.forEach(([a, b], k) => {
+      const suiv = pts[k + 1];
+      [[a, b], suiv ? [(a + suiv[0]) / 2, (b + suiv[1]) / 2] : null].forEach((p, m) => {
+        if (!p) return;
+        lumieres += `<circle class="lumiere" style="--k:${(i * 3 + k * 2 + m) % 9}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="1.8" fill="${ampoules[(i + k * 2 + m) % ampoules.length]}"/>`;
+      });
+    });
+
+    const demi = f.col / 2 + 0.6;
     bouteilles += `
       <g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
         <g class="bouteille" style="--i:${i}">
-          <line x1="0" y1="0" x2="0" y2="${fil}" stroke="currentColor" stroke-opacity=".6" stroke-width="1.2"/>
-          <rect x="-3.5" y="${fil - 4}" width="7" height="5" rx="1.5" fill="#8a5a2b"/>
-          <g transform="translate(0 ${fil})">
-            <path d="${f.d}" style="fill:${verres[i]}" fill-opacity=".72" stroke="rgba(0,0,0,.25)" stroke-width="1"/>
+          <line x1="0" y1="0" x2="0" y2="${fil}" stroke="${jute}" stroke-width="1.3"/>
+          <g transform="translate(0 ${fil}) scale(${echelle})">
+            <path d="${f.d}" fill="${COULEURS_FLEURS[verres[i]]}" fill-opacity=".78" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
+            <ellipse cx="0" cy="${c.y + c.h / 2}" rx="${c.l * 0.75}" ry="${c.h * 0.65}" fill="url(#lueur)"/>
+            <polyline points="${pts.map((p) => p.join(',')).join(' ')}" fill="none" stroke="#3b3326" stroke-opacity=".55" stroke-width=".6" stroke-linejoin="round"/>
+            <g filter="url(#halo)">${lumieres}</g>
+            <path d="${f.d}" fill="url(#reflet)"/>
+            <path d="M${-demi} 4h${2 * demi}M${-demi} 6.5h${2 * demi}" stroke="${jute}" stroke-width="1.2"/>
+            ${bouquet(bouquets[i])}
           </g>
-          <g filter="url(#halo)">${points}</g>
-          <path d="M${c.x + 3} ${fil + c.y + 2}v${c.h - 6}" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>
         </g>
       </g>`;
   }
-  // Chaque guirlande a son propre filtre « halo » : un filtre placé dans un écran caché ne s'afficherait pas ailleurs.
+  // Chaque guirlande a ses propres dégradés et filtre : un élément placé dans un écran caché ne s'afficherait pas ailleurs.
   document.querySelectorAll('.guirlande').forEach((el, j) => {
-    el.innerHTML = `<svg viewBox="0 0 ${largeur} ${creux + 120}" role="presentation" focusable="false">
-    <defs><filter id="halo${j}" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="1.6" result="flou"/>
-      <feMerge><feMergeNode in="flou"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter></defs>
-    <path d="M0 4Q${largeur / 2} ${4 + 2 * creux} ${largeur} 4" fill="none" stroke="currentColor" stroke-opacity=".6" stroke-width="2"/>
-    ${bouteilles.replaceAll('url(#halo)', `url(#halo${j})`)}</svg>`;
+    el.innerHTML = `<svg viewBox="0 0 ${largeur} ${creux + 170}" role="presentation" focusable="false">
+    <defs>
+      <filter id="halo${j}" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="1.4" result="flou"/>
+        <feMerge><feMergeNode in="flou"/><feMergeNode in="flou"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <radialGradient id="lueur${j}"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".5"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient>
+      <linearGradient id="reflet${j}" x1="0" x2="1">
+        <stop offset=".12" stop-color="#fff" stop-opacity=".45"/><stop offset=".32" stop-color="#fff" stop-opacity="0"/>
+        <stop offset=".8" stop-color="#fff" stop-opacity="0"/><stop offset=".92" stop-color="#fff" stop-opacity=".18"/>
+      </linearGradient>
+    </defs>
+    <path d="M0 4Q${largeur / 2} ${4 + 2 * creux} ${largeur} 4" fill="none" stroke="${jute}" stroke-width="2.2"/>
+    ${bouteilles.replace(/url\(#(halo|lueur|reflet)\)/g, `url(#$1${j})`)}</svg>`;
   });
 }
 
