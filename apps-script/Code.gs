@@ -27,6 +27,7 @@ const P = {
   LIEU: 'Lieu du mariage',
   LIMITE: 'Date limite de réponse',
   LIMITE_ISO: 'Date limite de réponse (AAAA-MM-JJ)',
+  // Les hébergements de l'onglet Hébergements sont proposés automatiquement ; ce paramètre ajoute les autres choix.
   COUCHAGE: 'Lieux de couchage (séparés par ;)',
   LENDEMAIN: 'Repas du lendemain',
   URL: 'Adresse du site des invités',
@@ -39,7 +40,7 @@ const PARAMS_DEFAUT = [
   [P.LIEU, 'Village de Kerpenhir, Locmariaquer'],
   [P.LIMITE, '1er juin 2027'],
   [P.LIMITE_ISO, '2027-06-01'],
-  [P.COUCHAGE, 'Sur place ; Gîte (à renommer) ; Hôtel (à renommer) ; Je rentre chez moi ; Autre'],
+  [P.COUCHAGE, 'Sur place ; Chez de la famille ou des amis ; Je rentre chez moi ; Autre'],
   [P.LENDEMAIN, 'Dimanche 22 août 2027, le midi'],
   [P.URL, 'https://cyriaquedaniel.github.io/mariage/'],
 ];
@@ -475,9 +476,20 @@ function lireParams_() {
     // Pas de valeur par défaut ici : sur un ancien Sheet sans cette ligne, le site garde le texte ci-dessus.
     limiteIso: dico[P.LIMITE_ISO] || '',
     lendemain: val(P.LENDEMAIN),
-    couchages: decouper_(val(P.COUCHAGE)),
+    couchages: choixCouchage_(val(P.COUCHAGE)),
     url: val(P.URL),
   };
+}
+
+/**
+ * Choix « Où dormirez-vous ? » : d'abord les hébergements de l'onglet Hébergements (hors exemples),
+ * puis les autres choix du paramètre. Les noms provisoires « (à renommer) » sont ignorés.
+ */
+function choixCouchage_(autres) {
+  const noms = lireTableau_(FEUILLE.HEBERGEMENTS, ['nom']).map(function (h) { return h.nom; })
+    .filter(function (n) { return n && n.indexOf('(exemple)') < 0; });
+  const liste = noms.concat(decouper_(autres).filter(function (c) { return c.indexOf('(à renommer)') < 0; }));
+  return liste.filter(function (c, i) { return liste.indexOf(c) === i; });
 }
 
 function trouverFoyer_(code) {

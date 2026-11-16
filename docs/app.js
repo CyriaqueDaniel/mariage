@@ -118,7 +118,7 @@ const LANGUES = Object.keys(TEXTES);
 /* ---------- Données de démonstration (fictives) ---------- */
 const DEMO_PARAMS = {
   maries: 'Morgane & Cyriaque', date: 'Samedi 21 août 2027', iso: '2027-08-21',
-  lieu: 'Lieu à compléter', limite: '1er juin 2027', limiteIso: '2027-06-01',
+  lieu: 'Le Jardin, Exempleville (exemple)', limite: '1er juin 2027', limiteIso: '2027-06-01',
 };
 const DEMO_FOYERS = {
   DEMO01: { code: 'DEMO01', nom: 'Famille Exemple', adultes: ['Marie Exemple', 'Paul Exemple'], enfants: ['Léa Exemple'], langue: 'fr' },
@@ -279,6 +279,9 @@ function afficherSite(brouillon) {
   document.title = params.maries;
   $('#maries').textContent = params.maries;
   $('#date').textContent = formaterDate(params.iso, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) || params.date;
+  const lieu = /compléter/i.test(params.lieu || '') ? '' : params.lieu || '';
+  $('#lieu').textContent = lieu;
+  $('#lieu').hidden = !lieu;
   $('#titre-accueil').textContent = t('bonjour', { nom: foyer.nom });
   $('#compte').innerHTML = texteCompte(params.iso);
   const limite = formaterDate(params.limiteIso, { day: 'numeric', month: 'long', year: 'numeric' }) || params.limite;
@@ -308,9 +311,26 @@ function boutonItineraire(lieu, adresse) {
     aria-label="${esc(t('itineraireAria', { lieu: lieu || adresse }))}">${esc(t('itineraire'))}</a>`;
 }
 
-/** Texte sûr avec liens cliquables : on échappe tout, puis on transforme les adresses http(s) en liens. */
+/** Texte sûr avec liens cliquables : on échappe tout, puis les adresses http(s) et les numéros de téléphone deviennent des liens. */
 function texteAvecLiens(s) {
-  return esc(s).replace(/https?:\/\/[^\s<]*[^\s<.,;:!?)]/g, (url) => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+  return esc(s)
+    // Le lien affiche une adresse courte (« google.com/maps ») plutôt que toute l'URL.
+    .replace(/https?:\/\/[^\s<]*[^\s<.,;:!?)]/g, (url) => {
+      const court = url.replace(/^https?:\/\/(www\.)?/, '').split(/[?#]/)[0].split('/').slice(0, 2).join('/').replace(/\/$/, '');
+      return `<a href="${url}" target="_blank" rel="noopener">${court}</a>`;
+    })
+    .replace(/(?:\+33\s?|\b0)[1-9](?:[\s.]?\d{2}){4}\b/g, (tel) => `<a href="tel:${tel.replace(/[\s.]/g, '')}">${tel}</a>`);
+}
+
+/**
+ * Une réponse = un paragraphe par ligne, pour aérer. Un début de ligne court suivi de « : »
+ * (« En voiture : », « Lorys : ») est mis en gras.
+ */
+function reponseAeree(s) {
+  return String(s).split('\n').map((l) => l.trim()).filter(Boolean).map((ligne) => {
+    const m = ligne.match(/^([^:]{1,25}?)(\s?:)\s(.*)$/);
+    return m ? `<p><strong>${esc(m[1] + m[2])}</strong> ${texteAvecLiens(m[3])}</p>` : `<p>${texteAvecLiens(ligne)}</p>`;
+  }).join('');
 }
 
 /** Infos pratiques : une question = un volet qu'on ouvre d'un toucher. Sans réponse, la question est cachée. */
@@ -319,9 +339,9 @@ function afficherInfos(liste) {
   const remplies = liste.filter((q) => champ(q, 'question') && champ(q, 'reponse'));
   if (!remplies.length) { zone.innerHTML = `<p class="aide">${esc(t('infosVide'))}</p>`; return; }
   zone.innerHTML = remplies.map((q) => `
-    <details class="question">
+    <details class="faq">
       <summary>${esc(champ(q, 'question'))}</summary>
-      <p>${texteAvecLiens(champ(q, 'reponse'))}</p>
+      <div class="reponse">${reponseAeree(champ(q, 'reponse'))}</div>
     </details>`).join('');
 }
 
@@ -521,11 +541,12 @@ const VALEURS_ES = {
   Voiture: 'Coche', Train: 'Tren', Avion: 'Avión', Autre: 'Otro',
   'Non merci': 'No, gracias', 'Je propose des places': 'Ofrezco plazas', 'Je cherche une place': 'Busco plaza',
   'Sur place': 'En el lugar de la boda', 'Je rentre chez moi': 'Vuelvo a casa',
+  'Chez de la famille ou des amis': 'En casa de familia o amigos',
 };
 const libelle = (v) => (etat.langue === 'es' && VALEURS_ES[v]) || v;
 
 const DEMO_LISTES = {
-  couchages: ['Sur place', 'Gîte des Tilleuls (exemple)', 'Camping du Lac (exemple)', 'Je rentre chez moi', 'Autre'],
+  couchages: ['Gîte des Tilleuls (exemple)', 'Camping du Lac (exemple)', 'Sur place', 'Chez de la famille ou des amis', 'Je rentre chez moi', 'Autre'],
   allergenes: ['Gluten', 'Crustacés', 'Œufs', 'Poissons', 'Arachides', 'Soja', 'Lait', 'Fruits à coque', 'Céleri', 'Moutarde', 'Sésame', 'Sulfites', 'Lupin', 'Mollusques'],
   regimes: ['Aucun', 'Végétarien', 'Végan', 'Sans porc', 'Halal', 'Casher', 'Sans gluten (non allergique)', 'Femme enceinte', 'Autre (préciser en message)'],
   transports: ['Voiture', 'Train', 'Avion', 'Autre'],

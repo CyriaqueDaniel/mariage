@@ -26,7 +26,8 @@ Les invités, eux, n'ont besoin d'aucun compte : ils ouvrent leur lien et répon
 
 ## 4. Remplir vos informations
 
-- **Paramètres** : vos prénoms, le lieu, la date limite, et surtout les **vrais noms des lieux de couchage** (séparés par `;`).
+- **Paramètres** : vos prénoms, le lieu, la date limite.
+  - « Lieux de couchage » : la question « Où dormirez-vous ? » propose automatiquement chaque hébergement de l'onglet Hébergements, puis les choix écrits ici (séparés par `;`), par exemple `Sur place ; Chez de la famille ou des amis ; Je rentre chez moi ; Autre`.
   - Remplissez aussi « Date limite de réponse (AAAA-MM-JJ) », par exemple `2027-06-01` : le site l'écrit alors tout seul en français (« 1er juin 2027 ») ou en espagnol (« 1 de junio de 2027 »). Même chose pour la date du mariage.
 - **Foyers** : un foyer par ligne (un couple, une famille, une personne seule).
   - Colonne « Adultes » : les prénoms et noms séparés par `;`, par exemple `Marie Dupont ; Paul Dupont`.
@@ -35,7 +36,9 @@ Les invités, eux, n'ont besoin d'aucun compte : ils ouvrent leur lien et répon
   - Colonne « Langue » : `fr` pour le français, `es` pour l'espagnol. Vide = français.
 - **Infos pratiques** : une ligne par question que les invités se posent (tenue, parking, qui appeler…). Le programme n'est pas sur le site : il est sur le faire-part.
   - Une question n'apparaît sur le site que si sa colonne « Réponse FR » est remplie. Pas de réponse = question cachée. Supprimez les lignes inutiles, ajoutez-en autant que vous voulez.
-  - Un lien (qui commence par `https://`, par exemple un plan d'accès) devient cliquable. Pour aller à la ligne dans une cellule : `Ctrl + Entrée`.
+  - Un lien (qui commence par `https://`, par exemple un plan d'accès) et un numéro de téléphone (`06 12 34 56 78` ou `+33 6 12 34 56 78`) deviennent cliquables.
+  - Chaque ligne de la réponse s'affiche comme un paragraphe ; un début court suivi de « : » (`En voiture :`, `Lorys :`) est mis en gras. Pour aller à la ligne dans une cellule : `Ctrl + Entrée`.
+  - Les numéros de téléphone : écrivez-les seulement dans le Sheet (le code est public sur GitHub).
   - Les colonnes « ES » sont la traduction espagnole. Si vous les laissez vides, le texte français s'affiche.
 - **Hébergements** : une ligne par lieu où dormir (nom, adresse, téléphone, lien de réservation, prix, infos).
   - Le prix n'a pas de colonne espagnole : écrivez-le sans mots, par exemple `90 €`, ou laissez-le vide si l'onglet Tarifs est rempli.

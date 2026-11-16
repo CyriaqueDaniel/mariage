@@ -107,6 +107,7 @@ body {
   text-wrap: balance;
 }
 .hero-date { margin: 14px 0 0; font-size: 20px; font-weight: 700; }
+.hero-lieu { margin: 4px 0 0; font-size: 18px; font-weight: 500; }
 
 /* ---------- Navigation : en bas sur téléphone, sous l'en-tête sur ordinateur ---------- */
 .onglets {
@@ -151,22 +152,23 @@ main section { display: flex; flex-direction: column; align-items: flex-start; g
 
 /* Infos pratiques : une question par ligne, on touche pour lire la réponse */
 #liste-infos { gap: 0; }
-.question { border-top: 1px solid var(--ligne); }
-.question:last-child { border-bottom: 1px solid var(--ligne); }
-.question summary {
+.faq { border-top: 1px solid var(--ligne); }
+.faq:last-child { border-bottom: 1px solid var(--ligne); }
+.faq summary {
   display: flex; justify-content: space-between; align-items: center; gap: 16px;
   min-height: 56px; padding: 12px 0;
   font-size: 20px; line-height: 1.25; font-weight: 700;
   cursor: pointer; list-style: none;
 }
-.question summary::-webkit-details-marker { display: none; }
-.question summary::after {
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
   content: '+'; flex: none;
   font-size: 30px; line-height: 1; font-weight: 500; color: var(--vert);
 }
-.question[open] summary::after { content: '−'; }
-.question p { margin: 0 0 18px; white-space: pre-line; overflow-wrap: anywhere; }
-.question a { color: var(--bleu); font-weight: 700; }
+.faq[open] summary::after { content: '−'; }
+.faq .reponse { display: flex; flex-direction: column; gap: 12px; padding: 2px 0 22px; }
+.faq .reponse p { margin: 0; overflow-wrap: anywhere; }
+.faq a { color: var(--bleu); font-weight: 700; }
 
 /* Où dormir : une fiche par lieu */
 .fiche {
