@@ -317,7 +317,7 @@ const EMAIL = {
     bonjour: 'Bonjour {nom},',
     texte: [
       'Nous avons la joie de vous inviter à notre mariage, le {date}.',
-      'Sur notre site, vous trouverez les infos pratiques, des idées pour dormir sur place et le formulaire pour nous répondre.',
+      'Sur notre site, vous trouverez les infos pratiques, des idées pour dormir sur place et le formulaire à remplir.',
     ],
     bouton: 'Ouvrir mon invitation',
     limite: 'Merci de nous répondre avant le {limite}.',
