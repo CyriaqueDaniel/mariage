@@ -90,11 +90,13 @@ Avant l'envoi à tous les invités, envoyez-vous un essai :
 2. Rechargez le Google Sheet : menu **Mariage > M'envoyer un email de test (FR + ES)**.
 3. La première fois, Google demande une **nouvelle autorisation** (« Envoyer des e-mails en votre nom ») : c'est normal, acceptez-la comme à l'étape 3.
 4. Tapez votre adresse email (ou laissez vide pour utiliser celle de votre compte Google), puis **OK**.
-5. Vous recevez 2 emails, marqués `[TEST]` : un en français, un en espagnol. Regardez aussi dans les spams.
+5. Vous recevez 4 emails, marqués `[TEST]` : en français et en espagnol, chacun pour une personne seule et pour un foyer de plusieurs personnes. Regardez aussi dans les spams.
 6. Cliquez sur le bouton « Ouvrir mon invitation » : le site s'ouvre sur un foyer fictif (codes démo), aucun vrai invité n'est utilisé.
 
 Bon à savoir :
 - On ne peut pas joindre un site web à un email comme un fichier : l'email contient un **bouton** qui ouvre le site, avec le code du foyer déjà rempli.
+- L'email est personnel : il salue chaque personne du foyer par son prénom, adultes puis enfants (« Bonjour Marie, Paul et Léa, »). Le prénom est le premier mot de chaque nom de l'onglet Foyers : écrivez un prénom composé avec un tiret (`Jean-Pierre Dupont`).
+- Une personne seule est tutoyée (« t'inviter », « tu trouveras »), un foyer de plusieurs personnes est vouvoyé. En espagnol : « tú » pour une personne seule, « vosotros » à plusieurs.
 - L'email part de votre adresse Gmail, avec « Morgane & Cyriaque » comme nom d'expéditeur.
 - Un compte Gmail gratuit peut envoyer environ **100 emails par jour** (le message de fin de test indique combien il en reste). On enverra un email par foyer, pas par personne.
 - Le texte des emails se change en haut de la partie « Emails d'invitation » de `Code.gs` (`EMAIL`). L'espagnol est à faire relire.

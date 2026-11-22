@@ -309,41 +309,70 @@ function genererCodesEtLiens() {
 /* Emails d'invitation                                                 */
 /* ------------------------------------------------------------------ */
 
-// Texte des emails. Français en « vous », espagnol en « tú » comme sur le site (à faire relire).
-// {nom}, {maries}, {date}, {lieu}, {limite} sont remplacés automatiquement.
+// Texte des emails, en deux versions : « un » = une seule personne dans le foyer, « plusieurs » = plusieurs personnes.
+// Français : « tu » pour une personne seule, « vous » à plusieurs.
+// Espagnol : « tú » pour une personne seule, « vosotros » à plusieurs (espagnol d'Espagne, à faire relire).
+// {prenoms}, {maries}, {date}, {limite} sont remplacés automatiquement.
+// {prenoms} = les prénoms de tout le foyer, adultes puis enfants : « Marie, Paul et Léa ».
 const EMAIL = {
   fr: {
     objet: 'Invitation au mariage de {maries}',
-    bonjour: 'Bonjour {nom},',
-    texte: [
-      'Nous avons la joie de vous inviter à notre mariage, le {date}.',
-      'Sur notre site, vous trouverez les infos pratiques, des idées pour dormir sur place et le formulaire à remplir.',
-    ],
-    bouton: 'Ouvrir mon invitation',
-    limite: 'Merci de nous répondre avant le {limite}.',
-    secours: 'Si le bouton ne marche pas, copiez ce lien dans votre navigateur :',
-    signature: 'À très bientôt,',
+    un: {
+      bonjour: 'Bonjour {prenoms},',
+      texte: [
+        'Nous avons la joie de t\'inviter à notre mariage, le {date}.',
+        'Sur notre site, tu trouveras les infos pratiques, des idées pour dormir sur place et le formulaire à remplir.',
+      ],
+      bouton: 'Ouvrir mon invitation',
+      limite: 'Merci de nous répondre avant le {limite}.',
+      secours: 'Si le bouton ne marche pas, copie ce lien dans ton navigateur :',
+      signature: 'À très bientôt,',
+    },
+    plusieurs: {
+      bonjour: 'Bonjour {prenoms},',
+      texte: [
+        'Nous avons la joie de vous inviter à notre mariage, le {date}.',
+        'Sur notre site, vous trouverez les infos pratiques, des idées pour dormir sur place et le formulaire à remplir.',
+      ],
+      bouton: 'Ouvrir notre invitation',
+      limite: 'Merci de nous répondre avant le {limite}.',
+      secours: 'Si le bouton ne marche pas, copiez ce lien dans votre navigateur :',
+      signature: 'À très bientôt,',
+    },
   },
   es: {
     objet: 'Invitación a la boda de {maries}',
-    bonjour: 'Hola, {nom}:',
-    texte: [
-      'Tenemos la alegría de invitarte a nuestra boda, el {date}.',
-      'En nuestra web encontrarás la información práctica, ideas para alojarte cerca y el formulario para respondernos.',
-    ],
-    bouton: 'Abrir mi invitación',
-    limite: 'Por favor, respóndenos antes del {limite}.',
-    secours: 'Si el botón no funciona, copia este enlace en tu navegador:',
-    signature: '¡Hasta muy pronto!',
+    un: {
+      bonjour: 'Hola, {prenoms}:',
+      texte: [
+        'Tenemos la alegría de invitarte a nuestra boda, el {date}.',
+        'En nuestra web encontrarás la información práctica, ideas para alojarte cerca y el formulario para respondernos.',
+      ],
+      bouton: 'Abrir mi invitación',
+      limite: 'Por favor, respóndenos antes del {limite}.',
+      secours: 'Si el botón no funciona, copia este enlace en tu navegador:',
+      signature: '¡Hasta muy pronto!',
+    },
+    plusieurs: {
+      bonjour: 'Hola, {prenoms}:',
+      texte: [
+        'Tenemos la alegría de invitaros a nuestra boda, el {date}.',
+        'En nuestra web encontraréis la información práctica, ideas para alojaros cerca y el formulario para respondernos.',
+      ],
+      bouton: 'Abrir nuestra invitación',
+      limite: 'Por favor, respondednos antes del {limite}.',
+      secours: 'Si el botón no funciona, copiad este enlace en vuestro navegador:',
+      signature: '¡Hasta muy pronto!',
+    },
   },
 };
 
-/** Menu Mariage : envoie à votre adresse un email en français et un en espagnol, avec les liens démo. */
+/** Menu Mariage : envoie à votre adresse les 4 versions de l'email (FR/ES, une personne/plusieurs), avec les liens démo. */
 function envoyerEmailTest() {
   const ui = SpreadsheetApp.getUi();
   const moi = Session.getActiveUser().getEmail();
   const rep = ui.prompt('Email de test',
-    'À quelle adresse envoyer les 2 emails de test (un en français, un en espagnol) ?' +
+    'À quelle adresse envoyer les 4 emails de test (français et espagnol, pour une personne seule et pour plusieurs) ?' +
     (moi ? '\nLaissez vide pour les recevoir sur ' + moi + '.' : ''),
     ui.ButtonSet.OK_CANCEL);
   if (rep.getSelectedButton() !== ui.Button.OK) return;
@@ -354,19 +383,47 @@ function envoyerEmailTest() {
   }
 
   const params = lireParams_();
-  // Les codes démo ouvrent le site avec des infos fictives : aucun vrai invité n'est utilisé.
-  [['fr', 'Famille Exemple', 'DEMO01'], ['es', 'Familia Ejemplo', 'DEMO02']].forEach(function (t) {
-    envoyerInvitation_(adresse, t[1], params.url + '?code=' + t[2], t[0], params, '[TEST] ');
+  // Foyers fictifs : aucun vrai invité n'est utilisé. Les liens ouvrent les foyers démo du site.
+  const essais = [
+    { langue: 'fr', code: 'DEMO01', adultes: ['Marie Exemple', 'Paul Exemple'], enfants: ['Léa Exemple'] },
+    { langue: 'fr', code: 'DEMO01', adultes: ['Jean-Pierre Exemple'], enfants: [] },
+    { langue: 'es', code: 'DEMO02', adultes: ['Frida Ejemplo'], enfants: [] },
+    { langue: 'es', code: 'DEMO02', adultes: ['Carmen Ejemplo', 'Diego Ejemplo'], enfants: ['Inés Ejemplo'] },
+  ];
+  essais.forEach(function (f) {
+    envoyerInvitation_(adresse, f, params.url + '?code=' + f.code, f.langue, params, '[TEST] ');
   });
-  ui.alert('2 emails de test envoyés à ' + adresse + '.\n' +
+  ui.alert('4 emails de test envoyés à ' + adresse + '.\n' +
     'Regardez aussi dans les spams. Envois encore possibles aujourd\'hui : ' + MailApp.getRemainingDailyQuota() + '.');
 }
 
-/** Envoie l'email d'invitation d'un foyer dans sa langue, avec un bouton vers son lien personnel. */
-function envoyerInvitation_(adresse, nom, lien, langue, params, prefixeObjet) {
-  const m = EMAIL[langue] || EMAIL.fr;
+/** Premier mot de chaque nom : « Marie Dupont » → « Marie ». Un prénom composé s'écrit avec un tiret (Jean-Pierre). */
+function prenoms_(foyer) {
+  return (foyer.adultes || []).concat(foyer.enfants || [])
+    .map(function (n) { return String(n).trim().split(/\s+/)[0]; })
+    .filter(String);
+}
+
+/** « Marie, Paul et Léa » ; en espagnol « y », ou « e » devant un prénom qui commence par le son « i » (Inés, Hilario). */
+function listePrenoms_(liste, langue) {
+  if (liste.length < 2) return liste.join('');
+  const dernier = liste[liste.length - 1];
+  let et = 'et';
+  if (langue === 'es') et = /^h?[ií](?![aeoáéó])/i.test(dernier) ? 'e' : 'y';
+  return liste.slice(0, -1).join(', ') + ' ' + et + ' ' + dernier;
+}
+
+/**
+ * Envoie l'email d'invitation d'un foyer ({ nom, adultes, enfants }) dans sa langue,
+ * au singulier ou au pluriel selon le nombre de personnes, avec un bouton vers son lien personnel.
+ */
+function envoyerInvitation_(adresse, foyer, lien, langue, params, prefixeObjet) {
+  const textes = EMAIL[langue] || EMAIL.fr;
+  const liste = prenoms_(foyer);
+  const m = liste.length === 1 ? textes.un : textes.plusieurs;
   const valeurs = {
-    nom: nom,
+    // Sans prénom dans le Sheet, on salue avec le nom du foyer.
+    prenoms: liste.length ? listePrenoms_(liste, langue) : (foyer.nom || ''),
     maries: params.maries,
     lieu: params.lieu,
     // Minuscule au début (« le samedi 21 août ») ; l'en-tête de l'email remet la majuscule.
@@ -404,7 +461,7 @@ function envoyerInvitation_(adresse, nom, lien, langue, params, prefixeObjet) {
 
   MailApp.sendEmail({
     to: adresse,
-    subject: (prefixeObjet || '') + remplir(m.objet),
+    subject: (prefixeObjet || '') + remplir(textes.objet),
     body: texte,
     htmlBody: html,
     name: params.maries,
