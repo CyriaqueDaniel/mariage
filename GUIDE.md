@@ -82,6 +82,24 @@ Le futur site (sur GitHub Pages) demandera les infos à Apps Script. Pour vérif
 - `?action=invitation&code=VOTRECODE` (avec le code de « Famille Exemple ») : vous devez voir un texte qui commence par `{"params":` et contient le nom du foyer.
 - `?action=invitation&code=XXXXXX` : vous devez voir seulement `{"erreur":"code"}`. Aucune info n'est donnée sans un bon code.
 
+## 9. Tester l'email d'invitation
+
+Avant l'envoi à tous les invités, envoyez-vous un essai :
+
+1. Recopiez le nouveau `Code.gs` dans Apps Script et enregistrez.
+2. Rechargez le Google Sheet : menu **Mariage > M'envoyer un email de test (FR + ES)**.
+3. La première fois, Google demande une **nouvelle autorisation** (« Envoyer des e-mails en votre nom ») : c'est normal, acceptez-la comme à l'étape 3.
+4. Tapez votre adresse email (ou laissez vide pour utiliser celle de votre compte Google), puis **OK**.
+5. Vous recevez 2 emails, marqués `[TEST]` : un en français, un en espagnol. Regardez aussi dans les spams.
+6. Cliquez sur le bouton « Ouvrir mon invitation » : le site s'ouvre sur un foyer fictif (codes démo), aucun vrai invité n'est utilisé.
+
+Bon à savoir :
+- On ne peut pas joindre un site web à un email comme un fichier : l'email contient un **bouton** qui ouvre le site, avec le code du foyer déjà rempli.
+- L'email part de votre adresse Gmail, avec « Morgane & Cyriaque » comme nom d'expéditeur.
+- Un compte Gmail gratuit peut envoyer environ **100 emails par jour** (le message de fin de test indique combien il en reste). On enverra un email par foyer, pas par personne.
+- Le texte des emails se change en haut de la partie « Emails d'invitation » de `Code.gs` (`EMAIL`). L'espagnol est à faire relire.
+- Il faudra aussi **publier une nouvelle version** (voir « Bon à savoir » plus bas) pour que le site garde la même version du code que le Sheet.
+
 ## Bon à savoir
 
 - **Après chaque modification du code**, il faut republier, sinon les invités voient l'ancienne version :

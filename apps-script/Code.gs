@@ -83,6 +83,8 @@ function onOpen() {
     .createMenu('Mariage')
     .addItem('1. Installer les onglets', 'installer')
     .addItem('2. Générer les codes et liens', 'genererCodesEtLiens')
+    .addSeparator()
+    .addItem('M\'envoyer un email de test (FR + ES)', 'envoyerEmailTest')
     .addToUi();
 }
 
@@ -301,6 +303,126 @@ function genererCodesEtLiens() {
   ui.alert(url
     ? 'Codes et liens générés. Envoyez à chaque foyer son lien personnel (colonne E).'
     : 'Codes générés. Les liens apparaîtront quand vous aurez écrit l\'adresse du site dans « Paramètres » (voir le guide). Relancez alors ce menu.');
+}
+
+/* ------------------------------------------------------------------ */
+/* Emails d'invitation                                                 */
+/* ------------------------------------------------------------------ */
+
+// Texte des emails. Français en « vous », espagnol en « tú » comme sur le site (à faire relire).
+// {nom}, {maries}, {date}, {lieu}, {limite} sont remplacés automatiquement.
+const EMAIL = {
+  fr: {
+    objet: 'Invitation au mariage de {maries}',
+    bonjour: 'Bonjour {nom},',
+    texte: [
+      'Nous avons la joie de vous inviter à notre mariage, le {date}.',
+      'Sur notre site, vous trouverez les infos pratiques, des idées pour dormir sur place et le formulaire pour nous répondre.',
+    ],
+    bouton: 'Ouvrir mon invitation',
+    limite: 'Merci de nous répondre avant le {limite}.',
+    secours: 'Si le bouton ne marche pas, copiez ce lien dans votre navigateur :',
+    signature: 'À très bientôt,',
+  },
+  es: {
+    objet: 'Invitación a la boda de {maries}',
+    bonjour: 'Hola, {nom}:',
+    texte: [
+      'Tenemos la alegría de invitarte a nuestra boda, el {date}.',
+      'En nuestra web encontrarás la información práctica, ideas para alojarte cerca y el formulario para respondernos.',
+    ],
+    bouton: 'Abrir mi invitación',
+    limite: 'Por favor, respóndenos antes del {limite}.',
+    secours: 'Si el botón no funciona, copia este enlace en tu navegador:',
+    signature: '¡Hasta muy pronto!',
+  },
+};
+
+/** Menu Mariage : envoie à votre adresse un email en français et un en espagnol, avec les liens démo. */
+function envoyerEmailTest() {
+  const ui = SpreadsheetApp.getUi();
+  const moi = Session.getActiveUser().getEmail();
+  const rep = ui.prompt('Email de test',
+    'À quelle adresse envoyer les 2 emails de test (un en français, un en espagnol) ?' +
+    (moi ? '\nLaissez vide pour les recevoir sur ' + moi + '.' : ''),
+    ui.ButtonSet.OK_CANCEL);
+  if (rep.getSelectedButton() !== ui.Button.OK) return;
+  const adresse = rep.getResponseText().trim() || moi;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adresse)) {
+    ui.alert('Cette adresse email ne semble pas valide.');
+    return;
+  }
+
+  const params = lireParams_();
+  // Les codes démo ouvrent le site avec des infos fictives : aucun vrai invité n'est utilisé.
+  [['fr', 'Famille Exemple', 'DEMO01'], ['es', 'Familia Ejemplo', 'DEMO02']].forEach(function (t) {
+    envoyerInvitation_(adresse, t[1], params.url + '?code=' + t[2], t[0], params, '[TEST] ');
+  });
+  ui.alert('2 emails de test envoyés à ' + adresse + '.\n' +
+    'Regardez aussi dans les spams. Envois encore possibles aujourd\'hui : ' + MailApp.getRemainingDailyQuota() + '.');
+}
+
+/** Envoie l'email d'invitation d'un foyer dans sa langue, avec un bouton vers son lien personnel. */
+function envoyerInvitation_(adresse, nom, lien, langue, params, prefixeObjet) {
+  const m = EMAIL[langue] || EMAIL.fr;
+  const valeurs = {
+    nom: nom,
+    maries: params.maries,
+    lieu: params.lieu,
+    // Minuscule au début (« le samedi 21 août ») ; l'en-tête de l'email remet la majuscule.
+    date: (function (d) { return d.charAt(0).toLowerCase() + d.slice(1); })(langue === 'es' && params.iso ? dateEs_(params.iso, true) : params.date),
+    limite: langue === 'es' && params.limiteIso ? dateEs_(params.limiteIso, false) : params.limite,
+  };
+  const remplir = function (s) {
+    return s.replace(/\{(\w+)\}/g, function (tout, cle) { return valeurs[cle] !== undefined ? valeurs[cle] : tout; });
+  };
+  const h = function (s) { return echapperHtml_(remplir(s)); };
+
+  const paragraphe = 'margin:0 0 16px;font-size:16px;line-height:1.5;color:#1b2330';
+  const html =
+    '<div style="background:#f7f6f0;padding:24px 12px;font-family:Arial,Helvetica,sans-serif">' +
+    '<div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:12px;padding:28px 24px;border-top:6px solid #1f7a4d">' +
+    '<p style="margin:0 0 8px;font-size:26px;font-weight:bold;color:#1f7a4d">' + echapperHtml_(params.maries) + '</p>' +
+    '<p style="margin:0 0 24px;font-size:15px;color:#4f5866">' + echapperHtml_(valeurs.date.charAt(0).toUpperCase() + valeurs.date.slice(1)) +
+    (params.lieu ? '<br>' + echapperHtml_(params.lieu) : '') + '</p>' +
+    '<p style="' + paragraphe + '">' + h(m.bonjour) + '</p>' +
+    m.texte.map(function (t) { return '<p style="' + paragraphe + '">' + h(t) + '</p>'; }).join('') +
+    '<p style="margin:24px 0;text-align:center"><a href="' + echapperHtml_(lien) + '" ' +
+    'style="display:inline-block;background:#1f7a4d;color:#ffffff;text-decoration:none;font-size:17px;font-weight:bold;padding:14px 28px;border-radius:999px">' +
+    h(m.bouton) + '</a></p>' +
+    (valeurs.limite ? '<p style="' + paragraphe + '">' + h(m.limite) + '</p>' : '') +
+    '<p style="' + paragraphe + '">' + h(m.signature) + '<br>' + echapperHtml_(params.maries) + '</p>' +
+    '<p style="margin:24px 0 0;font-size:13px;color:#4f5866">' + h(m.secours) + '<br>' +
+    '<a href="' + echapperHtml_(lien) + '" style="color:#2347c5;word-break:break-all">' + echapperHtml_(lien) + '</a></p>' +
+    '</div></div>';
+
+  // Version texte seul, pour les messageries qui n'affichent pas le HTML.
+  const texte = [remplir(m.bonjour), ''].concat(m.texte.map(remplir)).concat([
+    '', params.lieu, '', remplir(m.bouton) + ' : ' + lien, '',
+    valeurs.limite ? remplir(m.limite) : '', '', remplir(m.signature), params.maries,
+  ]).join('\n');
+
+  MailApp.sendEmail({
+    to: adresse,
+    subject: (prefixeObjet || '') + remplir(m.objet),
+    body: texte,
+    htmlBody: html,
+    name: params.maries,
+  });
+}
+
+/** « 2027-08-21 » → « sábado 21 de agosto de 2027 » (avec le jour) ou « 21 de agosto de 2027 ». */
+function dateEs_(iso, avecJour) {
+  const p = String(iso).split('-').map(Number);
+  if (p.length !== 3 || !p[0] || !p[1] || !p[2]) return iso;
+  const mois = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const jours = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  const d = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+  return (avecJour ? jours[d.getUTCDay()] + ' ' : '') + p[2] + ' de ' + mois[p[1] - 1] + ' de ' + p[0];
+}
+
+function echapperHtml_(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function codeAleatoire_() {
