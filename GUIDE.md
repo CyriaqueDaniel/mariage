@@ -104,12 +104,12 @@ Bon à savoir :
 
 ## 10. Récupérer les noms et contacts des invités (page d'inscription)
 
-Une page du site permet à chaque foyer d'écrire ses prénoms, noms (adultes et enfants) et son email et/ou son WhatsApp. Tout arrive dans l'onglet **Inscriptions** du Sheet, et un bouton crée ensuite les foyers.
+Une page du site permet à chaque foyer d'écrire ses prénoms, noms (adultes et enfants), son email et/ou son WhatsApp, et son **adresse postale** (obligatoire, pour envoyer le faire-part). Un encadré rouge, sous « + Ajouter un adulte », rappelle de ne pas inscrire de +1 non prévu. Tout arrive dans l'onglet **Inscriptions** du Sheet, et un bouton crée ensuite les foyers.
 
 1. Recopiez le nouveau `Code.gs` dans Apps Script, enregistrez, puis **publiez une nouvelle version** (voir « Bon à savoir »).
 2. Rechargez le Sheet, puis lancez **Mariage > 1. Installer les onglets**. Cela crée :
    - l'onglet **Inscriptions** ;
-   - les colonnes **Email** et **WhatsApp** à la fin de « Foyers » ;
+   - les colonnes **Email**, **WhatsApp**, **Adresse**, **Complément d'adresse**, **Code postal**, **Ville** et **Pays** à la fin de « Foyers » (et les colonnes d'adresse à la fin de « Inscriptions ») ;
    - la ligne **Clé du lien d'inscription** dans « Paramètres », remplie avec un mot secret tiré au hasard.
 3. Menu **Mariage > Voir les liens d'inscription (à envoyer)** : copiez le lien français (`…/inscription.html?cle=…`) et le lien espagnol (`…/inscripcion.html?cle=…`).
 4. Envoyez vous-même le bon lien à chaque invité (WhatsApp, SMS, email…). Le lien espagnol ouvre la page en espagnol, et le foyer sera noté `es`.
@@ -118,6 +118,8 @@ Une page du site permet à chaque foyer d'écrire ses prénoms, noms (adultes et
 
 Bon à savoir :
 - **Doublons** : si l'email, le WhatsApp ou le nom d'un adulte existe déjà dans « Foyers », l'inscription n'est pas ajoutée et la colonne « Ajouté dans Foyers » l'explique. Si ce n'est pas un doublon, écrivez `FORCER` dans cette case et relancez le menu.
+- Vous aviez déjà installé l'onglet « Inscriptions » ? Relancez **Mariage > 1. Installer les onglets** : les colonnes d'adresse sont ajoutées sans toucher au reste.
+- Pour imprimer les étiquettes des faire-part, les colonnes Adresse à Pays de « Foyers » sont prêtes (une ligne par foyer).
 - Avant d'ajouter, vous pouvez corriger une inscription dans l'onglet (faute de frappe, « Nom du foyer proposé »…).
 - **Sécurité** : sans la clé, la page affiche « Ce lien n'est pas complet » et rien n'est enregistré. Pour bloquer les anciens liens, changez la clé dans « Paramètres » (n'importe quel mot, sans espace) et renvoyez les nouveaux liens.
 - Les numéros sont rangés au format international (`+33612345678`) : un `06…` devient `+33…`, un `6…` espagnol à 9 chiffres devient `+34…`.

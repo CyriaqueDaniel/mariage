@@ -60,6 +60,7 @@
         <h3 id="titre-adultes" class="sous-titre" data-t="adultes">Adultes</h3>
         <div id="liste-adultes" class="pile"></div>
         <button type="button" class="btn btn-contour btn-petit" id="ajout-adulte" data-t="ajoutAdulte">+ Ajouter un adulte</button>
+        <p class="alerte" role="note" data-t="pasDePlusUn">Merci de n'inscrire que les personnes invitées : pas de +1 non prévu(e). En cas de doute, demandez-nous !</p>
       </section>
 
       <section class="pile" aria-labelledby="titre-enfants">
@@ -82,6 +83,38 @@
           <p id="whatsapp-aide" class="aide petit" data-t="whatsappAide"></p>
         </div>
         <p id="erreur-contact" class="msg-erreur" hidden></p>
+      </section>
+
+      <section class="carte" aria-labelledby="titre-adresse" id="carte-adresse">
+        <h3 id="titre-adresse" data-t="adresse">Votre adresse postale</h3>
+        <p class="aide" data-t="adresseAide"></p>
+        <div>
+          <label for="rue" class="etiquette" data-t="rue">Numéro et rue</label>
+          <input id="rue" class="champ" autocomplete="address-line1" maxlength="120">
+          <p class="msg-erreur" hidden></p>
+        </div>
+        <div>
+          <label for="complement" class="etiquette" data-t="complement">Complément (facultatif)</label>
+          <input id="complement" class="champ" autocomplete="address-line2" maxlength="120" aria-describedby="complement-aide">
+          <p id="complement-aide" class="aide petit" data-t="complementAide"></p>
+        </div>
+        <div class="deux-champs cp-ville">
+          <div>
+            <label for="code-postal" class="etiquette" data-t="codePostal">Code postal</label>
+            <input id="code-postal" class="champ" autocomplete="postal-code" maxlength="12">
+            <p class="msg-erreur" hidden></p>
+          </div>
+          <div>
+            <label for="ville" class="etiquette" data-t="ville">Ville</label>
+            <input id="ville" class="champ" autocomplete="address-level2" maxlength="80">
+            <p class="msg-erreur" hidden></p>
+          </div>
+        </div>
+        <div>
+          <label for="pays" class="etiquette" data-t="pays">Pays</label>
+          <input id="pays" class="champ" autocomplete="country-name" maxlength="60">
+          <p class="msg-erreur" hidden></p>
+        </div>
       </section>
 
       <!-- Case invisible : seuls les robots la remplissent. -->

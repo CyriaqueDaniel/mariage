@@ -51,10 +51,12 @@ const PARAMS_DEFAUT = [
 ];
 
 const ENTETES_FOYERS = ['Code', 'Nom du foyer', 'Adultes (séparés par ;)', 'Enfants (séparés par ;)', 'Lien personnel', 'A répondu', 'Langue (fr ou es)',
-  'Email', 'WhatsApp'];
+  'Email', 'WhatsApp', 'Adresse', 'Complément d\'adresse', 'Code postal', 'Ville', 'Pays'];
+// Adresse postale du foyer, pour envoyer le faire-part (mêmes colonnes dans « Foyers » et « Inscriptions »).
+const ENTETES_ADRESSE = ['Adresse', 'Complément d\'adresse', 'Code postal', 'Ville', 'Pays'];
 // Remplie par la page d'inscription : une ligne par foyer qui s'est inscrit, à vérifier avant de l'ajouter dans « Foyers ».
 const ENTETES_INSCRIPTIONS = ['Reçue le', 'Langue', 'Adultes (séparés par ;)', 'Enfants (séparés par ;)', 'Email', 'WhatsApp',
-  'Nom du foyer proposé', 'Ajouté dans Foyers'];
+  'Nom du foyer proposé', 'Ajouté dans Foyers'].concat(ENTETES_ADRESSE);
 const MAX_ADULTES = 10;
 const LANGUES = ['fr', 'es'];
 
@@ -135,21 +137,31 @@ function installer() {
     styleEntete_(foyers, ENTETES_FOYERS.length);
     foyers.setColumnWidth(2, 240).setColumnWidth(3, 300).setColumnWidth(4, 240).setColumnWidth(5, 420);
   } else {
-    // Onglet créé avec une ancienne version : on ajoute seulement les titres des colonnes manquantes (Langue, Email, WhatsApp).
+    // Onglet créé avec une ancienne version : on ajoute seulement les titres des colonnes manquantes (Langue, Email, WhatsApp, adresse).
     const titres = foyers.getRange(1, 1, 1, ENTETES_FOYERS.length).getDisplayValues()[0];
     titres.forEach(function (t, i) { if (!t) foyers.getRange(1, i + 1).setValue(ENTETES_FOYERS[i]); });
     styleEntete_(foyers, ENTETES_FOYERS.length);
   }
-  // Numéros WhatsApp en texte brut : sinon le Sheet transforme « +33… » en nombre ou en formule.
-  foyers.getRange(1, ENTETES_FOYERS.indexOf('WhatsApp') + 1, foyers.getMaxRows(), 1).setNumberFormat('@');
+  // WhatsApp et code postal en texte brut : sinon le Sheet transforme « +33… » en nombre et « 08001 » en 8001.
+  ['WhatsApp', 'Code postal'].forEach(function (t) {
+    foyers.getRange(1, ENTETES_FOYERS.indexOf(t) + 1, foyers.getMaxRows(), 1).setNumberFormat('@');
+  });
 
   const inscriptions = obtenirOuCreer_(ss, FEUILLE.INSCRIPTIONS);
   if (inscriptions.getLastRow() === 0) {
     inscriptions.getRange(1, 1, 1, ENTETES_INSCRIPTIONS.length).setValues([ENTETES_INSCRIPTIONS]);
-    inscriptions.getRange('F:F').setNumberFormat('@');
     styleEntete_(inscriptions, ENTETES_INSCRIPTIONS.length);
-    inscriptions.setColumnWidth(3, 300).setColumnWidth(4, 240).setColumnWidth(5, 240).setColumnWidth(7, 240).setColumnWidth(8, 220);
+    inscriptions.setColumnWidth(3, 300).setColumnWidth(4, 240).setColumnWidth(5, 240).setColumnWidth(7, 240).setColumnWidth(8, 220)
+      .setColumnWidth(9, 280);
+  } else {
+    // Onglet créé avant l'ajout de l'adresse : on ajoute les titres manquants.
+    const titres = inscriptions.getRange(1, 1, 1, ENTETES_INSCRIPTIONS.length).getDisplayValues()[0];
+    titres.forEach(function (t, i) { if (!t) inscriptions.getRange(1, i + 1).setValue(ENTETES_INSCRIPTIONS[i]); });
+    styleEntete_(inscriptions, ENTETES_INSCRIPTIONS.length);
   }
+  ['WhatsApp', 'Code postal'].forEach(function (t) {
+    inscriptions.getRange(1, ENTETES_INSCRIPTIONS.indexOf(t) + 1, inscriptions.getMaxRows(), 1).setNumberFormat('@');
+  });
 
   const infos = obtenirOuCreer_(ss, FEUILLE.INFOS);
   if (infos.getLastRow() === 0) {
@@ -571,8 +583,11 @@ function apiInscription_(corps) {
   verrou.waitLock(20000);
   try {
     const sh = feuille_(FEUILLE.INSCRIPTIONS);
-    sh.appendRow([new Date(), ins.langue, ins.adultes.join(' ; '), ins.enfants.join(' ; '),
-      ins.email, ins.whatsapp, ins.nomFoyer, '']);
+    const ligne = sh.getLastRow() + 1;
+    // WhatsApp et code postal écrits comme du texte (« 08001 » garde son zéro).
+    ['WhatsApp', 'Code postal'].forEach(function (t) { sh.getRange(ligne, ENTETES_INSCRIPTIONS.indexOf(t) + 1).setNumberFormat('@'); });
+    sh.getRange(ligne, 1, 1, ENTETES_INSCRIPTIONS.length).setValues([[new Date(), ins.langue, ins.adultes.join(' ; '), ins.enfants.join(' ; '),
+      ins.email, ins.whatsapp, ins.nomFoyer, ''].concat(ins.adresse)]);
   } finally {
     verrou.releaseLock();
   }
@@ -601,6 +616,13 @@ function nettoyerInscription_(c) {
   if (c.whatsapp && !whatsapp) return { erreur: 'whatsapp' };
   if (!email && !whatsapp) return { erreur: 'contact' };
 
+  // Adresse postale du foyer, obligatoire (sauf le complément) : [rue, complément, code postal, ville, pays].
+  const a = c.adresse || {};
+  const ligneAdresse = function (v, max) { return texte_(String(v || '').replace(/\s+/g, ' '), max); };
+  const adresse = [ligneAdresse(a.rue, 120), ligneAdresse(a.complement, 120), ligneAdresse(a.codePostal, 12),
+    ligneAdresse(a.ville, 80), ligneAdresse(a.pays, 60)];
+  if (!adresse[0] || !adresse[2] || !adresse[3] || !adresse[4]) return { erreur: 'adresse' };
+
   const complet = function (p) { return p.prenom + ' ' + p.nom; };
   return {
     langue: langue,
@@ -609,6 +631,7 @@ function nettoyerInscription_(c) {
     email: email,
     whatsapp: whatsapp,
     nomFoyer: nomFoyer_(adultes),
+    adresse: adresse,
   };
 }
 
@@ -705,6 +728,7 @@ function ajouterInscriptions() {
       nouvelle[col('Langue (fr ou es)')] = langue;
       nouvelle[col('Email')] = r[4].trim();
       nouvelle[col('WhatsApp')] = r[5].trim();
+      ENTETES_ADRESSE.forEach(function (t) { nouvelle[col(t)] = r[ENTETES_INSCRIPTIONS.indexOf(t)].trim(); });
       const ligne = foyers.getLastRow() + 1;
       foyers.getRange(ligne, 1, 1, nouvelle.length).setNumberFormat('@').setValues([nouvelle]);
       [r[4].trim().toLowerCase(), r[5].replace(/\s/g, '')].concat(adultes.map(function (n) { return n.toLowerCase(); }))
