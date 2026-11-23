@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Inscripción a la boda · Morgane &amp; Cyriaque</title>
+<!--
+  Adresse espagnole de la page d'inscription. Elle sert seulement à afficher une carte d'aperçu
+  en espagnol quand on colle le lien dans WhatsApp, puis elle ouvre inscription.html en espagnol
+  en gardant la clé du lien (?cle=…).
+-->
+<meta name="description" content="Dinos quién viene y cómo contactarte para recibir tu invitación.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+<meta property="og:url" content="https://cyriaquedaniel.github.io/mariage/inscripcion.html">
+<meta property="og:title" content="¡Morgane &amp; Cyriaque se casan!">
+<meta property="og:description" content="Dinos quién viene y cómo contactarte para recibir tu invitación.">
+<meta property="og:image" content="https://cyriaquedaniel.github.io/mariage/apercu.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Botellas con flores colgadas, Morgane &amp; Cyriaque, 21 · 08 · 2027">
+<meta name="twitter:card" content="summary_large_image">
+<script>
+  // Ouvre la vraie page en espagnol, avec la clé du lien.
+  (function () {
+    var p = new URLSearchParams(location.search);
+    p.set('lang', 'es');
+    location.replace('inscription.html?' + p.toString() + location.hash);
+  })();
+</script>
+<style>body { font: 18px/1.5 system-ui, sans-serif; background: #f7f6f0; color: #1b2330; padding: 32px 16px; text-align: center; }</style>
+</head>
+<body>
+<p>Abriendo la página…</p>
+</body>
+</html>

@@ -111,8 +111,9 @@ Une page du site permet à chaque foyer d'écrire ses prénoms, noms (adultes et
    - l'onglet **Inscriptions** ;
    - les colonnes **Email** et **WhatsApp** à la fin de « Foyers » ;
    - la ligne **Clé du lien d'inscription** dans « Paramètres », remplie avec un mot secret tiré au hasard.
-3. Menu **Mariage > Voir les liens d'inscription (à envoyer)** : copiez le lien français et le lien espagnol.
+3. Menu **Mariage > Voir les liens d'inscription (à envoyer)** : copiez le lien français (`…/inscription.html?cle=…`) et le lien espagnol (`…/inscripcion.html?cle=…`).
 4. Envoyez vous-même le bon lien à chaque invité (WhatsApp, SMS, email…). Le lien espagnol ouvre la page en espagnol, et le foyer sera noté `es`.
+   Dans WhatsApp, Messenger ou un email, le lien s'affiche avec une **carte d'aperçu** : l'image des bouteilles avec vos prénoms et la date, et un texte en français (« Morgane & Cyriaque se marient ! ») ou en espagnol (« ¡Morgane & Cyriaque se casan! ») selon le lien. Par SMS, le lien reste souvent brut.
 5. Quand des inscriptions sont arrivées : menu **Mariage > Ajouter les inscriptions dans Foyers**. Chaque inscription devient un foyer, avec son code et son lien personnel. La colonne « Ajouté dans Foyers » indique la ligne créée.
 
 Bon à savoir :
@@ -122,6 +123,9 @@ Bon à savoir :
 - Les numéros sont rangés au format international (`+33612345678`) : un `06…` devient `+33…`, un `6…` espagnol à 9 chiffres devient `+34…`.
 - **Essai sans rien enregistrer** : ouvrez `…/inscription.html?cle=demo` (ou `docs/inscription.html` sur votre ordinateur, avec `?cle=demo` à la fin de l'adresse).
 - Pour un vrai essai : remplissez la page avec le vrai lien, vérifiez la ligne dans « Inscriptions », puis supprimez-la.
+- **Avant d'envoyer les liens, nettoyez vos essais** : dans « Inscriptions », supprimez les lignes de test (clic droit sur le numéro de ligne > Supprimer la ligne). Si vous les aviez ajoutées dans « Foyers », supprimez-y aussi ces lignes (sinon un vrai invité au même nom ou au même email serait pris pour un doublon).
+- La carte d'aperçu est mise en mémoire par WhatsApp : si vous avez déjà collé le lien avant le changement, l'ancienne carte peut rester affichée quelque temps. Les invités, eux, verront la bonne.
+- L'image de la carte est `docs/apercu.jpg` (1200 × 630). Pour la changer plus tard (photo de votre vraie bouteille…), remplacez ce fichier en gardant le même nom.
 
 ## Bon à savoir
 

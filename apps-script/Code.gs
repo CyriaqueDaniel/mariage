@@ -529,7 +529,8 @@ function lienInscription_(params, langue) {
   let base = (params.url || '').trim().replace(/[?#].*$/, '').replace(/[^\/]*\.html$/, '');
   if (!base || !cle) return '';
   if (base.slice(-1) !== '/') base += '/';
-  return base + 'inscription.html?cle=' + encodeURIComponent(cle) + (langue === 'es' ? '&lang=es' : '');
+  // inscripcion.html = même page, mais avec une carte d'aperçu (WhatsApp…) en espagnol.
+  return base + (langue === 'es' ? 'inscripcion.html' : 'inscription.html') + '?cle=' + encodeURIComponent(cle);
 }
 
 /** Menu Mariage : affiche les deux liens à envoyer (français et espagnol). */
