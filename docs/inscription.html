@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Page privée : on demande aux moteurs de recherche de ne pas l'indexer. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1f7a4d">
+<title>Notre mariage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="sans-onglets">
+<a class="evitement" href="#contenu" data-t="allerContenu">Aller au contenu</a>
+
+<!-- Chargement : on vérifie que le lien est bon -->
+<div id="ecran-chargement" class="ecran-centre" role="status">
+  <p data-t="chargement">Chargement…</p>
+</div>
+
+<!-- Lien incomplet ou trop ancien -->
+<div id="ecran-erreur" class="ecran-centre" hidden>
+  <div class="guirlande" aria-hidden="true"></div>
+  <div class="connexion">
+    <h1 data-t="erreurTitre">Oups</h1>
+    <p id="erreur-texte" class="aide"></p>
+    <button type="button" class="btn" id="reessayer" data-t="reessayer" hidden>Réessayer</button>
+  </div>
+</div>
+
+<!-- La page d'inscription -->
+<div id="ecran-site" hidden>
+  <header class="hero">
+    <div class="guirlande" aria-hidden="true"></div>
+    <p class="hero-intro" data-t="seMarient">se marient</p>
+    <h1 id="maries" class="hero-maries"></h1>
+    <p id="date" class="hero-date"></p>
+  </header>
+
+  <main id="contenu" tabindex="-1">
+    <form id="form-inscription" class="formulaire" novalidate>
+      <h2 class="titre-section" data-t="titre">Qui sera de la fête ?</h2>
+      <p class="aide" data-t="intro"></p>
+
+      <section class="pile" aria-labelledby="titre-adultes">
+        <h3 id="titre-adultes" class="sous-titre" data-t="adultes">Adultes</h3>
+        <div id="liste-adultes" class="pile"></div>
+        <button type="button" class="btn btn-contour btn-petit" id="ajout-adulte" data-t="ajoutAdulte">+ Ajouter un adulte</button>
+      </section>
+
+      <section class="pile" aria-labelledby="titre-enfants">
+        <h3 id="titre-enfants" class="sous-titre" data-t="enfants">Enfants</h3>
+        <p class="aide" data-t="enfantsAide"></p>
+        <div id="liste-enfants" class="pile"></div>
+        <button type="button" class="btn btn-contour btn-petit" id="ajout-enfant" data-t="ajoutEnfant">+ Ajouter un enfant</button>
+      </section>
+
+      <section class="carte" aria-labelledby="titre-contact" id="carte-contact">
+        <h3 id="titre-contact" data-t="contact">Comment vous joindre ?</h3>
+        <p class="aide" data-t="contactAide"></p>
+        <div>
+          <label for="email" class="etiquette" data-t="email">Adresse email</label>
+          <input id="email" name="email" type="email" class="champ" autocomplete="email" inputmode="email" maxlength="120" spellcheck="false">
+        </div>
+        <div>
+          <label for="whatsapp" class="etiquette" data-t="whatsapp">Numéro WhatsApp</label>
+          <input id="whatsapp" name="whatsapp" type="tel" class="champ" autocomplete="tel" inputmode="tel" maxlength="30" aria-describedby="whatsapp-aide">
+          <p id="whatsapp-aide" class="aide petit" data-t="whatsappAide"></p>
+        </div>
+        <p id="erreur-contact" class="msg-erreur" hidden></p>
+      </section>
+
+      <!-- Case invisible : seuls les robots la remplissent. -->
+      <div class="masque" aria-hidden="true">
+        <label for="site">Site</label>
+        <input id="site" name="site" tabindex="-1" autocomplete="off">
+      </div>
+
+      <p id="erreur-envoi" class="msg-erreur" role="alert" hidden></p>
+      <button class="btn" type="submit" id="envoyer" data-t="envoyer">Envoyer</button>
+    </form>
+
+    <div id="merci" class="merci-zone" hidden>
+      <div class="merci">
+        <h3 id="merci-titre" tabindex="-1"></h3>
+        <p data-t="merciTexte"></p>
+      </div>
+      <ul id="recap" class="recap carte"></ul>
+      <button type="button" class="lien" id="autre-foyer" data-t="autreFoyer">Inscrire un autre foyer</button>
+    </div>
+  </main>
+
+  <footer class="pied">
+    <p id="bandeau-demo" class="demo" hidden data-t="demo">Mode démonstration : rien n'est enregistré.</p>
+    <button type="button" class="lien bouton-langue" data-t="autreLangue">Ver en español</button>
+  </footer>
+</div>
+
+<script src="reglages.js"></script>
+<script src="decor.js"></script>
+<script src="inscription.js"></script>
+</body>
+</html>
