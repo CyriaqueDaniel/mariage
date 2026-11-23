@@ -82,6 +82,47 @@ Le futur site (sur GitHub Pages) demandera les infos à Apps Script. Pour vérif
 - `?action=invitation&code=VOTRECODE` (avec le code de « Famille Exemple ») : vous devez voir un texte qui commence par `{"params":` et contient le nom du foyer.
 - `?action=invitation&code=XXXXXX` : vous devez voir seulement `{"erreur":"code"}`. Aucune info n'est donnée sans un bon code.
 
+## 9. Tester l'email d'invitation
+
+Avant l'envoi à tous les invités, envoyez-vous un essai :
+
+1. Recopiez le nouveau `Code.gs` dans Apps Script et enregistrez.
+2. Rechargez le Google Sheet : menu **Mariage > M'envoyer un email de test (FR + ES)**.
+3. La première fois, Google demande une **nouvelle autorisation** (« Envoyer des e-mails en votre nom ») : c'est normal, acceptez-la comme à l'étape 3.
+4. Tapez votre adresse email (ou laissez vide pour utiliser celle de votre compte Google), puis **OK**.
+5. Vous recevez 4 emails, marqués `[TEST]` : en français et en espagnol, chacun pour une personne seule et pour un foyer de plusieurs personnes. Regardez aussi dans les spams.
+6. Cliquez sur le bouton « Ouvrir mon invitation » : le site s'ouvre sur un foyer fictif (codes démo), aucun vrai invité n'est utilisé.
+
+Bon à savoir :
+- On ne peut pas joindre un site web à un email comme un fichier : l'email contient un **bouton** qui ouvre le site, avec le code du foyer déjà rempli.
+- L'email est personnel : il salue chaque personne du foyer par son prénom, adultes puis enfants (« Bonjour Marie, Paul et Léa, »). Le prénom est le premier mot de chaque nom de l'onglet Foyers : écrivez un prénom composé avec un tiret (`Jean-Pierre Dupont`).
+- Une personne seule est tutoyée (« t'inviter », « tu trouveras »), un foyer de plusieurs personnes est vouvoyé. En espagnol : « tú » pour une personne seule, « vosotros » à plusieurs.
+- L'email part de votre adresse Gmail, avec « Morgane & Cyriaque » comme nom d'expéditeur.
+- Un compte Gmail gratuit peut envoyer environ **100 emails par jour** (le message de fin de test indique combien il en reste). On enverra un email par foyer, pas par personne.
+- Le texte des emails se change en haut de la partie « Emails d'invitation » de `Code.gs` (`EMAIL`). L'espagnol est à faire relire.
+- Il faudra aussi **publier une nouvelle version** (voir « Bon à savoir » plus bas) pour que le site garde la même version du code que le Sheet.
+
+## 10. Récupérer les noms et contacts des invités (page d'inscription)
+
+Une page du site permet à chaque foyer d'écrire ses prénoms, noms (adultes et enfants) et son email et/ou son WhatsApp. Tout arrive dans l'onglet **Inscriptions** du Sheet, et un bouton crée ensuite les foyers.
+
+1. Recopiez le nouveau `Code.gs` dans Apps Script, enregistrez, puis **publiez une nouvelle version** (voir « Bon à savoir »).
+2. Rechargez le Sheet, puis lancez **Mariage > 1. Installer les onglets**. Cela crée :
+   - l'onglet **Inscriptions** ;
+   - les colonnes **Email** et **WhatsApp** à la fin de « Foyers » ;
+   - la ligne **Clé du lien d'inscription** dans « Paramètres », remplie avec un mot secret tiré au hasard.
+3. Menu **Mariage > Voir les liens d'inscription (à envoyer)** : copiez le lien français et le lien espagnol.
+4. Envoyez vous-même le bon lien à chaque invité (WhatsApp, SMS, email…). Le lien espagnol ouvre la page en espagnol, et le foyer sera noté `es`.
+5. Quand des inscriptions sont arrivées : menu **Mariage > Ajouter les inscriptions dans Foyers**. Chaque inscription devient un foyer, avec son code et son lien personnel. La colonne « Ajouté dans Foyers » indique la ligne créée.
+
+Bon à savoir :
+- **Doublons** : si l'email, le WhatsApp ou le nom d'un adulte existe déjà dans « Foyers », l'inscription n'est pas ajoutée et la colonne « Ajouté dans Foyers » l'explique. Si ce n'est pas un doublon, écrivez `FORCER` dans cette case et relancez le menu.
+- Avant d'ajouter, vous pouvez corriger une inscription dans l'onglet (faute de frappe, « Nom du foyer proposé »…).
+- **Sécurité** : sans la clé, la page affiche « Ce lien n'est pas complet » et rien n'est enregistré. Pour bloquer les anciens liens, changez la clé dans « Paramètres » (n'importe quel mot, sans espace) et renvoyez les nouveaux liens.
+- Les numéros sont rangés au format international (`+33612345678`) : un `06…` devient `+33…`, un `6…` espagnol à 9 chiffres devient `+34…`.
+- **Essai sans rien enregistrer** : ouvrez `…/inscription.html?cle=demo` (ou `docs/inscription.html` sur votre ordinateur, avec `?cle=demo` à la fin de l'adresse).
+- Pour un vrai essai : remplissez la page avec le vrai lien, vérifiez la ligne dans « Inscriptions », puis supprimez-la.
+
 ## Bon à savoir
 
 - **Après chaque modification du code**, il faut republier, sinon les invités voient l'ancienne version :

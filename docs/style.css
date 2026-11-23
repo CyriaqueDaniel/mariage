@@ -262,6 +262,28 @@ select.champ { appearance: auto; }
 .pied { max-width: 640px; margin: -24px auto 0; padding: 0 16px calc(var(--nav-h) + 24px); display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .demo { margin: 0; padding: 8px 12px; border: 2px dashed var(--soleil); border-radius: 10px; font-size: 16px; }
 
+/* ---------- Page d'inscription (pas d'onglets en bas) ---------- */
+.sans-onglets main { padding-bottom: 40px; }
+.sans-onglets .pied { padding-bottom: 40px; }
+.sous-titre { margin: 12px 0 0; font-size: 24px; line-height: 1.15; font-weight: 800; font-variation-settings: 'opsz' 48, 'wdth' 90; }
+.formulaire > section > .btn { align-self: flex-start; }
+.personne-titre { margin: 0; font-size: 18px; font-weight: 800; color: var(--vert); }
+.personne-tete .retirer { padding: 4px; }
+.deux-champs { display: grid; grid-template-columns: 1fr; gap: 4px 12px; }
+.deux-champs .etiquette { display: block; margin: 0 0 4px; }
+.deux-champs .msg-erreur, #carte-contact .msg-erreur { margin-top: 4px; font-size: 16px; }
+#carte-contact .etiquette { display: block; margin: 0 0 4px; }
+.aide.petit { font-size: 15px; margin-top: 4px; }
+.merci-zone { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.merci-zone .recap { width: 100%; padding: 18px; }
+.merci-zone .merci h3 { line-height: 1.1; }
+#carte-contact { align-items: stretch; }
+#ecran-erreur .connexion { text-align: center; }
+
+@media (min-width: 520px) {
+  .deux-champs { grid-template-columns: 1fr 1fr; }
+}
+
 @media (min-width: 760px) {
   .hero .guirlande { max-width: 760px; }
   .onglets {
