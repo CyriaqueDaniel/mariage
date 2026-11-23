@@ -277,7 +277,15 @@ select.champ { appearance: auto; }
 .merci-zone { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .merci-zone .recap { width: 100%; padding: 18px; }
 .merci-zone .merci h3 { line-height: 1.1; }
-#carte-contact { align-items: stretch; }
+#carte-contact, #carte-adresse { align-items: stretch; }
+#carte-adresse .etiquette { display: block; margin: 0 0 4px; }
+#carte-adresse .msg-erreur { margin-top: 4px; font-size: 16px; }
+/* Encadré rouge bien visible (pas de +1 non prévu) */
+.alerte {
+  margin: 4px 0 0; padding: 14px 16px; width: 100%;
+  border: 3px solid var(--danger); border-radius: 12px; background: #fdecea;
+  color: var(--danger); font-weight: 800; line-height: 1.4;
+}
 #ecran-erreur .connexion { text-align: center; }
 
 @media (min-width: 520px) {

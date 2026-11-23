@@ -50,6 +50,21 @@ const TEXTES = {
     demo: "Mode démonstration : rien n'est enregistré.",
     autreLangue: 'Ver en español',
     et: 'et',
+    pasDePlusUn: "Merci de n'inscrire que les personnes invitées : pas de +1 non prévu(e). En cas de doute, demandez-nous !",
+    adresse: 'Votre adresse postale',
+    adresseAide: 'Pour vous envoyer le faire-part.',
+    rue: 'Numéro et rue',
+    complement: 'Complément (facultatif)',
+    complementAide: 'Bâtiment, étage, appartement, lieu-dit…',
+    codePostal: 'Code postal',
+    ville: 'Ville',
+    pays: 'Pays',
+    paysDefaut: 'France',
+    errRue: 'Indiquez le numéro et la rue.',
+    errCodePostal: 'Indiquez le code postal.',
+    errVille: 'Indiquez la ville.',
+    errPays: 'Indiquez le pays.',
+    errAdresse: "L'adresse postale n'est pas complète.",
   },
   es: {
     allerContenu: 'Ir al contenido',
@@ -92,6 +107,21 @@ const TEXTES = {
     demo: 'Modo de demostración: no se guarda nada.',
     autreLangue: 'Voir en français',
     et: 'y',
+    pasDePlusUn: 'Inscribe solo a las personas invitadas: nada de acompañantes (+1) que no estén previstos. Si tienes dudas, ¡pregúntanos!',
+    adresse: 'Tu dirección postal',
+    adresseAide: 'Para enviarte la invitación en papel.',
+    rue: 'Calle y número',
+    complement: 'Piso, puerta… (opcional)',
+    complementAide: 'Bloque, escalera, piso, puerta…',
+    codePostal: 'Código postal',
+    ville: 'Ciudad',
+    pays: 'País',
+    paysDefaut: 'España',
+    errRue: 'Escribe la calle y el número.',
+    errCodePostal: 'Escribe el código postal.',
+    errVille: 'Escribe la ciudad.',
+    errPays: 'Escribe el país.',
+    errAdresse: 'La dirección postal no está completa.',
   },
 };
 const LANGUES = Object.keys(TEXTES);
@@ -182,6 +212,7 @@ function demarrer() {
   $('#autre-foyer').addEventListener('click', recommencer);
 
   ajouterPersonne('adulte');
+  $('#pays').value = t('paysDefaut');
   charger();
 }
 
@@ -217,7 +248,10 @@ function afficherPage() {
 }
 
 function changerLangue() {
+  const paysAvant = t('paysDefaut');
   etat.langue = etat.langue === 'fr' ? 'es' : 'fr';
+  // Pays encore à sa valeur proposée : on propose celui de l'autre langue.
+  if ($('#pays').value.trim() === paysAvant) $('#pays').value = t('paysDefaut');
   // La langue choisie reste dans l'adresse : elle sera enregistrée avec l'inscription.
   const url = new URL(location.href);
   etat.langue === 'es' ? url.searchParams.set('lang', 'es') : url.searchParams.delete('lang');
@@ -311,6 +345,13 @@ function lireFormulaire() {
     enfants,
     email: $('#email').value.trim(),
     whatsapp: $('#whatsapp').value.trim(),
+    adresse: {
+      rue: $('#rue').value.trim(),
+      complement: $('#complement').value.trim(),
+      codePostal: $('#code-postal').value.trim(),
+      ville: $('#ville').value.trim(),
+      pays: $('#pays').value.trim(),
+    },
     site: $('#site').value,
   };
 }
@@ -356,6 +397,10 @@ function verifier() {
   if (!email.value.trim() && !tel.value.trim()) erreurs.push([email, t('errContact')]);
   if (email.value.trim() && !emailValide(email.value.trim())) erreurs.push([email, t('errEmail')]);
   if (tel.value.trim() && !telephoneValide(tel.value)) erreurs.push([tel, t('errWhatsapp')]);
+  [['rue', 'errRue'], ['code-postal', 'errCodePostal'], ['ville', 'errVille'], ['pays', 'errPays']].forEach(([id, cle]) => {
+    const champ = document.getElementById(id);
+    if (!champ.value.trim()) erreurs.push([champ, t(cle)]);
+  });
   erreurs.forEach(([champ, message]) => marquer(champ, message));
   return erreurs;
 }
@@ -380,7 +425,7 @@ async function soumettre(e) {
   try {
     const r = await envoyerInscription(donnees);
     if (r.erreur === 'cle') return afficherErreur(t('lienInvalide'), false);
-    const messages = { noms: 'errNom', email: 'errEmail', whatsapp: 'errWhatsapp', contact: 'errContact' };
+    const messages = { noms: 'errNom', email: 'errEmail', whatsapp: 'errWhatsapp', contact: 'errContact', adresse: 'errAdresse' };
     if (r.erreur) {
       msgEnvoi.textContent = t(messages[r.erreur] || 'errEnvoi');
       msgEnvoi.hidden = false;
@@ -406,6 +451,7 @@ function afficherMerci(d) {
     [t('enfants'), d.enfants.map((p) => p.prenom + ' ' + p.nom).join(', ')],
     [t('email'), d.email],
     [t('whatsapp'), d.whatsapp],
+    [t('adresse'), [d.adresse.rue, d.adresse.complement, (d.adresse.codePostal + ' ' + d.adresse.ville).trim(), d.adresse.pays].filter(Boolean).join(', ')],
   ].filter((l) => l[1]);
   $('#recap').innerHTML = lignes.map(([qui, quoi]) =>
     `<li><span class="qui">${esc(qui)}</span><span class="quoi">${esc(quoi)}</span></li>`).join('');
@@ -420,6 +466,7 @@ function recommencer() {
   $('#liste-adultes').innerHTML = '';
   $('#liste-enfants').innerHTML = '';
   ajouterPersonne('adulte');
+  $('#pays').value = t('paysDefaut');
   $('#merci').hidden = true;
   $('#form-inscription').hidden = false;
   focusDernier('adulte');
